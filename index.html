@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
   <title>Pasterry - Totem</title>
   <style>
-    /* ===== CSS COMPLETO (MANTIDO IGUAL) ===== */
+    /* ===== CSS (MANTIDO, MAS REMOVI O HEADER-ANUNCIO E AJUSTEI O HEADER) ===== */
     :root {
       --bg: #1A1210;
       --card: #E8F5E9;
@@ -59,89 +59,6 @@
       flex-shrink: 0;
     }
     .logo img { width: 100%; height: 100%; object-fit: cover; display: block; }
-
-    /* ===== CARROSSEL DE ANÚNCIOS ===== */
-    .header-anuncio {
-      flex: 1;
-      min-width: 0;
-      overflow: hidden;
-      position: relative;
-      height: 60px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      border-radius: 12px;
-      background: rgba(0,0,0,0.2);
-      backdrop-filter: blur(4px);
-      padding: 0 8px;
-      cursor: pointer;
-    }
-    .anuncio-slide {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 10px;
-      opacity: 0;
-      transition: opacity 0.8s ease;
-      padding: 4px 8px;
-      pointer-events: none;
-    }
-    .anuncio-slide.active {
-      opacity: 1;
-      pointer-events: auto;
-    }
-    .anuncio-slide img {
-      width: 44px;
-      height: 44px;
-      object-fit: cover;
-      border-radius: 50%;
-      border: 2px solid rgba(255,215,0,0.3);
-      flex-shrink: 0;
-    }
-    .anuncio-slide .info {
-      display: flex;
-      flex-direction: column;
-      align-items: flex-start;
-      justify-content: center;
-      min-width: 0;
-      color: #fff;
-    }
-    .anuncio-slide .info .nome {
-      font-weight: 700;
-      font-size: clamp(12px, 1.8vw, 16px);
-      color: #FFD700;
-      text-shadow: 0 0 10px rgba(255,215,0,0.3);
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      max-width: 100%;
-    }
-    .anuncio-slide .info .preco {
-      font-weight: 800;
-      font-size: clamp(11px, 1.6vw, 15px);
-      color: #fff;
-      background: rgba(220,53,69,0.8);
-      padding: 1px 10px;
-      border-radius: 20px;
-      margin-top: 1px;
-    }
-    @media (max-width: 480px) {
-      .header-anuncio { height: 50px; }
-      .anuncio-slide img { width: 32px; height: 32px; }
-      .anuncio-slide .info .nome { font-size: 11px; }
-      .anuncio-slide .info .preco { font-size: 10px; padding: 0 8px; }
-    }
-    @media (max-width: 360px) {
-      .header-anuncio { height: 44px; }
-      .anuncio-slide img { width: 28px; height: 28px; }
-      .anuncio-slide .info .nome { font-size: 9px; }
-      .anuncio-slide .info .preco { font-size: 9px; padding: 0 6px; }
-    }
 
     /* ===== HEADER ACTIONS (MENU) ===== */
     .header-actions {
@@ -867,7 +784,6 @@
   <div class="app" id="app">
     <header id="mainHeader">
       <div class="logo" aria-hidden="true"><img id="logoImg" src="img/logo.jpg" alt="Logo Pasterry"></div>
-      <div class="header-anuncio" id="anuncioContainer"></div>
       <div class="header-actions">
         <button class="menu-btn" id="menuToggle" aria-label="Menu">
           <span class="bar"></span>
@@ -951,56 +867,7 @@
 
   <script>
     // ============================================================
-    // ANÚNCIOS (mantido igual)
-    // ============================================================
-    const anuncios = [
-      { img: 'img/pasteis/baiano.jpg', nome: 'Pastel Baiano', preco: 'R$ 12,00', produtoId: 'baiano', categoriaId: 'pasteis' },
-      { img: 'img/pasteis/italia.jpg', nome: 'Pastel Itália', preco: 'R$ 14,00', produtoId: 'italia', categoriaId: 'pasteis' },
-      { img: 'img/pasteis/mineiro.jpg', nome: 'Pastel Mineiro', preco: 'R$ 11,00', produtoId: 'mineiro', categoriaId: 'pasteis' },
-      { img: 'img/pasteis/chicken.jpg', nome: 'Pastel Chicken', preco: 'R$ 13,00', produtoId: 'chicken', categoriaId: 'pasteis' },
-      { img: 'img/pasteis/beef.jpg', nome: 'Pastel Beef', preco: 'R$ 15,00', produtoId: 'beef', categoriaId: 'pasteis' },
-      { img: 'img/pasteis/gaucho.jpg', nome: 'Pastel Gaúcho', preco: 'R$ 16,00', produtoId: 'gaucho', categoriaId: 'pasteis' }
-    ];
-
-    const container = document.getElementById('anuncioContainer');
-    let slideIndex = 0;
-    let intervaloAnuncios;
-
-    function renderAnuncios() {
-      container.innerHTML = '';
-      anuncios.forEach((anuncio, index) => {
-        const slide = document.createElement('div');
-        slide.className = 'anuncio-slide' + (index === 0 ? ' active' : '');
-        slide.dataset.produtoId = anuncio.produtoId;
-        slide.dataset.categoriaId = anuncio.categoriaId;
-        slide.innerHTML = `
-          <img src="${anuncio.img}" alt="${anuncio.nome}" loading="lazy" />
-          <div class="info">
-            <span class="nome">${anuncio.nome}</span>
-            <span class="preco">${anuncio.preco}</span>
-          </div>
-        `;
-        container.appendChild(slide);
-      });
-    }
-
-    function proximoAnuncio() {
-      const slides = container.querySelectorAll('.anuncio-slide');
-      if (slides.length === 0) return;
-      slides.forEach(s => s.classList.remove('active'));
-      slideIndex = (slideIndex + 1) % slides.length;
-      slides[slideIndex].classList.add('active');
-    }
-
-    function iniciarCarrosselAnuncios() {
-      renderAnuncios();
-      if (anuncios.length > 1) {
-        intervaloAnuncios = setInterval(proximoAnuncio, 3000);
-      }
-    }
-
-    // ============================================================
-    // FIREBASE (configuração mantida)
+    // FIREBASE
     // ============================================================
     const firebaseConfig = {
       apiKey: "AIzaSyDV9tPC5XNNmB_REgW1au2NtpP1ETtV1i0",
@@ -1015,56 +882,47 @@
     const db = firebase.firestore();
 
     // ============================================================
-    // NOVA LÓGICA: CARREGAR DADOS DO FIRESTORE
+    // CARREGAR CARDÁPIO DO FIRESTORE
     // ============================================================
     let CATEGORIES = [];
     let PRODUCTS = {};
 
-    // Função para carregar categorias e produtos do Firebase
     function carregarCardapio() {
-      // Buscar categorias
+      // Buscar categorias ATIVAS
       db.collection('categorias')
-        .where('ativo', '==', true)  // só categorias ativas
+        .where('ativo', '==', true)
         .onSnapshot((snapshot) => {
           CATEGORIES = [];
           snapshot.forEach(doc => {
             const data = doc.data();
             CATEGORIES.push({
               id: doc.id,
-              name: data.name || doc.id
+              name: data.name
             });
           });
-          // Ordenar por nome
           CATEGORIES.sort((a, b) => a.name.localeCompare(b.name));
-          // Se não houver categorias, criar fallback
           if (CATEGORIES.length === 0) {
             CATEGORIES = [{ id: 'geral', name: 'Geral' }];
           }
+          PRODUCTS = {};
+          CATEGORIES.forEach(cat => { PRODUCTS[cat.id] = []; });
           renderizarTudo();
         }, (error) => {
           console.error('Erro ao carregar categorias:', error);
-          // Fallback: tentar usar categorias do menu.js (se ainda existir)
-          carregarFallback();
         });
 
-      // Buscar produtos
+      // Buscar produtos ATIVOS
       db.collection('produtos')
-        .where('ativo', '==', true)  // só produtos ativos
+        .where('ativo', '==', true)
         .onSnapshot((snapshot) => {
-          // Reiniciar objeto PRODUCTS
-          PRODUCTS = {};
-          // Inicializar arrays para cada categoria
-          CATEGORIES.forEach(cat => {
-            PRODUCTS[cat.id] = [];
-          });
-          // Adicionar produtos
+          const tempProducts = {};
+          CATEGORIES.forEach(cat => { tempProducts[cat.id] = []; });
           snapshot.forEach(doc => {
             const data = doc.data();
             const catId = data.categoria || 'geral';
-            if (!PRODUCTS[catId]) {
-              PRODUCTS[catId] = [];
+            if (!tempProducts[catId]) {
+              tempProducts[catId] = [];
             }
-            // Montar objeto do produto
             const produto = {
               id: doc.id,
               title: data.title || 'Sem título',
@@ -1074,60 +932,17 @@
               sizes: data.sizes || null,
               units: data.units || null
             };
-            PRODUCTS[catId].push(produto);
+            tempProducts[catId].push(produto);
           });
+          PRODUCTS = tempProducts;
           renderizarTudo();
         }, (error) => {
           console.error('Erro ao carregar produtos:', error);
-          carregarFallback();
         });
     }
 
-    // Fallback: carregar do menu.js (se disponível) – mantido para compatibilidade
-    async function carregarFallback() {
-      try {
-        const module = await import('./menu.js');
-        if (module.CATEGORIES && module.PRODUCTS) {
-          CATEGORIES = module.CATEGORIES;
-          PRODUCTS = module.PRODUCTS;
-          renderizarTudo();
-        }
-      } catch (e) {
-        console.warn('Fallback menu.js não encontrado.');
-      }
-    }
-
-    // Função que dispara a renderização das categorias e produtos
-    function renderizarTudo() {
-      // Atualizar a logo (se tiver URL salva no config)
-      db.collection('config').doc('loja').get().then(doc => {
-        if (doc.exists && doc.data().logoUrl) {
-          document.getElementById('logoImg').src = doc.data().logoUrl;
-        }
-      }).catch(() => {});
-
-      if (CATEGORIES.length === 0) {
-        // Se ainda não há categorias, usar fallback
-        carregarFallback();
-        return;
-      }
-      // Atualiza a interface
-      if (typeof renderCategories === 'function') {
-        renderCategories();
-      }
-      if (typeof renderProducts === 'function') {
-        renderProducts();
-      }
-      if (typeof updateCheckoutText === 'function') {
-        updateCheckoutText();
-      }
-      if (typeof iniciarCarrossel === 'function') {
-        iniciarCarrossel();
-      }
-    }
-
     // ============================================================
-    // MAPEAMENTO DE RECHEIO (mantido)
+    // MAPEAMENTO DE RECHEIO (para exibição)
     // ============================================================
     const RECHEIO_MAP = {
       'Baiano': 'CALABRESA COM PIMENTA BAIANO',
@@ -1156,7 +971,7 @@
     }
 
     // ============================================================
-    // VARIÁVEIS GLOBAIS E CARRINHO (mantidos)
+    // VARIÁVEIS GLOBAIS E CARRINHO
     // ============================================================
     const CART_KEY = 'pasterry_cart_v1';
     function loadCart() { try { return JSON.parse(localStorage.getItem(CART_KEY) || '[]'); } catch { return []; } }
@@ -1178,7 +993,7 @@
     const centerToastSub = document.getElementById('centerToastSub');
 
     // ============================================================
-    // MENU DROPDOWN (mantido)
+    // MENU DROPDOWN
     // ============================================================
     const menuToggle = document.getElementById('menuToggle');
     const menuDropdown = document.getElementById('menuDropdown');
@@ -1201,7 +1016,7 @@
     });
 
     // ============================================================
-    // COMPARTILHAMENTO (mantido)
+    // COMPARTILHAMENTO
     // ============================================================
     const shareOverlay = document.getElementById('shareOverlay');
     const shareWhatsapp = document.getElementById('shareWhatsapp');
@@ -1234,7 +1049,7 @@
     shareOverlay.addEventListener('click', (e) => { if (e.target === shareOverlay) fecharShare(); });
 
     // ============================================================
-    // FUNÇÃO PARA ROLAR ATÉ O PRODUTO (mantido)
+    // FUNÇÃO PARA ROLAR ATÉ O PRODUTO
     // ============================================================
     function scrollParaProduto() {
       const params = new URLSearchParams(window.location.search);
@@ -1258,7 +1073,7 @@
     const formatBRL = (v) => v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 
     // ============================================================
-    // NOTIFICAÇÃO CENTRALIZADA (mantido)
+    // NOTIFICAÇÃO CENTRALIZADA
     // ============================================================
     function showCenterNotification(title, sub = 'Adicionado ao carrinho') {
       centerToast.classList.remove('voando');
@@ -1389,7 +1204,6 @@
           return;
         }
 
-        // Verifica se é a categoria "pasteis" para agrupar
         const isPasteis = (cat.id === 'pasteis');
         if (isPasteis) {
           const groups = {};
@@ -1470,7 +1284,7 @@
       const img = document.createElement('img');
       img.alt = p.title;
       img.loading = 'lazy';
-      img.src = p.img || "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='600' height='400'><rect width='100%' height='100%' fill='%230a1420'/><text x='50%' y='50%' fill='%23a7b6c1' font-size='20' text-anchor='middle' dominant-baseline='middle'>Imagem</text></svg>";
+      img.src = (p.img && p.img.startsWith('http')) ? p.img : "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='600' height='400'><rect width='100%' height='100%' fill='%230a1420'/><text x='50%' y='50%' fill='%23a7b6c1' font-size='20' text-anchor='middle' dominant-baseline='middle'>Sem imagem</text></svg>";
       media.appendChild(img);
 
       const logoMarca = document.createElement('img');
@@ -1622,7 +1436,7 @@
 
       const img = document.createElement('img');
       img.className = 'size-image';
-      img.src = p.img || '';
+      img.src = (p.img && p.img.startsWith('http')) ? p.img : "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='600' height='400'><rect width='100%' height='100%' fill='%230a1420'/><text x='50%' y='50%' fill='%23a7b6c1' font-size='20' text-anchor='middle' dominant-baseline='middle'>Sem imagem</text></svg>";
       img.alt = p.title;
       img.style.width = '100%';
       img.style.maxHeight = '200px';
@@ -1809,102 +1623,39 @@
     }
 
     // ============================================================
-    // EXTRAIR PALAVRAS-CHAVE DO NOME DO ANÚNCIO
-    // ============================================================
-    function extrairPalavraChave(nome) {
-      const ignorar = ['pastel', 'salgado', 'de', 'com', 'e', 'a', 'o', 'da', 'do', 'na', 'no', 'em', 'para', 'por'];
-      let palavras = nome.split(' ');
-      let chaves = palavras.filter(p => !ignorar.includes(p.toLowerCase()) && p.length > 2);
-      if (chaves.length === 0) chaves = palavras;
-      return chaves;
-    }
-
-    // ============================================================
-    // CLIQUE NOS ANÚNCIOS – BUSCA INTELIGENTE POR NOME (adaptado)
-    // ============================================================
-    container.addEventListener('click', function(e) {
-      const slideAtivo = container.querySelector('.anuncio-slide.active');
-      if (!slideAtivo) {
-        console.warn('Nenhum slide ativo');
-        return;
-      }
-      const nomeAnuncio = slideAtivo.querySelector('.nome')?.textContent || '';
-      console.log('🔍 Nome do anúncio:', nomeAnuncio);
-
-      if (!nomeAnuncio) {
-        alert('Produto não identificado no anúncio.');
-        return;
-      }
-
-      const chaves = extrairPalavraChave(nomeAnuncio);
-      console.log('🔑 Palavras-chave:', chaves);
-
-      let produto = null;
-      const categoriasPrioridade = ['pasteis', ...Object.keys(PRODUCTS).filter(c => c !== 'pasteis')];
-      for (const cat of categoriasPrioridade) {
-        const lista = PRODUCTS[cat] || [];
-        for (const p of lista) {
-          const tituloExibicao = getDisplayName(p.title);
-          const tituloOriginal = p.title;
-          const textoComparacao = (tituloExibicao + ' ' + tituloOriginal).toLowerCase();
-          const encontrado = chaves.some(chave => {
-            const chaveLower = chave.toLowerCase();
-            return textoComparacao.includes(chaveLower) ||
-                   normalizarTexto(tituloExibicao).includes(normalizarTexto(chave)) ||
-                   normalizarTexto(tituloOriginal).includes(normalizarTexto(chave));
-          });
-          if (encontrado) {
-            produto = p;
-            console.log(`✅ Encontrado na categoria "${cat}" com título: "${tituloExibicao}"`);
-            break;
-          }
-        }
-        if (produto) break;
-      }
-
-      if (!produto) {
-        console.log('🔎 Busca flexível...');
-        const nomeNormalizado = normalizarTexto(nomeAnuncio);
-        for (const cat in PRODUCTS) {
-          const encontrado = PRODUCTS[cat].find(p => {
-            const titulo = normalizarTexto(getDisplayName(p.title));
-            return titulo.includes(nomeNormalizado) || nomeNormalizado.includes(titulo);
-          });
-          if (encontrado) {
-            produto = encontrado;
-            console.log(`✅ Encontrado na categoria "${cat}" via busca flexível`);
-            break;
-          }
-        }
-      }
-
-      if (!produto) {
-        console.warn('❌ Produto não encontrado.');
-        alert('Produto não encontrado no cardápio. Entre em contato com a loja.');
-        return;
-      }
-
-      console.log('✅ Produto final:', produto);
-      if (produto.sizes && Object.keys(produto.sizes).length > 0) {
-        openSizeDialog(produto);
-      } else {
-        addToCart(produto.id, 'pasteis'); // fallback
-      }
-    });
-
-    // ============================================================
     // INICIALIZAÇÃO
     // ============================================================
-    function iniciarApp() {
-      iniciarCarrosselAnuncios();
-
-      // Carregar cardápio do Firebase (em tempo real)
-      carregarCardapio();
-
-      // Inicializa carrinho
+    function renderizarTudo() {
+      renderCategories();
+      renderProducts();
       updateCheckoutText();
+      iniciarCarrossel();
 
-      // (opcional) Escuta mudanças no Firebase para atualizar em tempo real – já feito via onSnapshot
+      // Carregar logo do cabeçalho
+      db.collection('config').doc('loja').get().then(doc => {
+        if (doc.exists) {
+          const data = doc.data();
+          // Logo cabeçalho
+          if (data.logoUrl) {
+            document.getElementById('logoImg').src = data.logoUrl;
+          }
+          // Logo de marca (sobreposição)
+          const logoMarcaUrl = data.logoMarca || '';
+          // Atualizar todos os elementos com classe .logo-marca e .logo-marca-detalhe
+          document.querySelectorAll('.logo-marca, .logo-marca-detalhe').forEach(el => {
+            if (logoMarcaUrl) {
+              el.src = logoMarcaUrl;
+              el.style.display = 'block';
+            } else {
+              el.style.display = 'none';
+            }
+          });
+        }
+      }).catch(() => {});
+    }
+
+    function iniciarApp() {
+      carregarCardapio();
     }
 
     iniciarApp();
