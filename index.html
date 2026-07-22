@@ -93,6 +93,37 @@
       gap: 6px;
       flex-shrink: 0;
     }
+    .search-box {
+      display: flex;
+      align-items: center;
+      background: rgba(0,0,0,0.3);
+      border-radius: 30px;
+      padding: 2px 8px;
+      gap: 4px;
+      max-width: 130px;
+      flex: 0 0 auto;
+      height: 32px;
+    }
+    .search-box input {
+      background: transparent;
+      border: none;
+      color: #fff;
+      padding: 4px 0;
+      outline: none;
+      width: 100%;
+      font-size: clamp(10px, 1.2vw, 13px);
+    }
+    .search-box input::placeholder { color: #9aa6b2; font-size: clamp(9px, 1vw, 12px); }
+    .search-box button {
+      background: transparent;
+      border: none;
+      color: #fff;
+      cursor: pointer;
+      font-size: 16px;
+      padding: 2px;
+      line-height: 1;
+    }
+
     .menu-btn {
       background: linear-gradient(135deg, #dc3545 0%, #ff4757 100%);
       border: none;
@@ -166,38 +197,6 @@
       border-top: 1px solid rgba(255,215,0,0.1);
     }
     .menu-dropdown .item.tempo-entrega .icon { font-size: 18px; }
-
-    /* ===== PESQUISA (LUPA MENOR) ===== */
-    .search-box {
-      display: flex;
-      align-items: center;
-      background: rgba(0,0,0,0.3);
-      border-radius: 30px;
-      padding: 2px 8px;
-      gap: 4px;
-      max-width: 130px;
-      flex: 0 0 auto;
-      height: 32px;
-    }
-    .search-box input {
-      background: transparent;
-      border: none;
-      color: #fff;
-      padding: 4px 0;
-      outline: none;
-      width: 100%;
-      font-size: clamp(10px, 1.2vw, 13px);
-    }
-    .search-box input::placeholder { color: #9aa6b2; font-size: clamp(9px, 1vw, 12px); }
-    .search-box button {
-      background: transparent;
-      border: none;
-      color: #fff;
-      cursor: pointer;
-      font-size: 16px;
-      padding: 2px;
-      line-height: 1;
-    }
 
     main {
       flex: 1;
@@ -417,7 +416,6 @@
     .btn.secondary { background: var(--glass); color: #1a1600; opacity: .9; }
     .btn:disabled { opacity: .6; cursor: not-allowed; }
 
-    /* OVERLAYS */
     .overlay {
       position: fixed;
       inset: 0;
@@ -856,7 +854,6 @@
         <span class="horario" id="horarioTexto"></span>
       </div>
       <div class="header-actions">
-        <!-- Pesquisa -->
         <div class="search-box">
           <input type="text" id="searchInput" placeholder="Buscar..." />
           <button id="searchBtn" aria-label="Buscar">🔍</button>
@@ -951,6 +948,7 @@
     let menuItems = [];
     let lojaAberta = true;
     let termoBusca = '';
+    let logoMarcaAtual = ''; // guarda a URL da logo de marca
 
     const DIAS_SEMANA = ['domingo','segunda','terca','quarta','quinta','sexta','sabado'];
     let horariosCache = {};
@@ -1484,14 +1482,20 @@
       media.appendChild(img);
 
       const logoMarca = document.createElement('img');
-      logoMarca.src = 'img/logo.jpg';
+      logoMarca.src = logoMarcaAtual || 'img/logo.jpg';
       logoMarca.alt = 'Logo Pasterry';
       logoMarca.className = 'logo-marca';
       logoMarca.loading = 'lazy';
       logoMarca.style.display = 'none';
       media.appendChild(logoMarca);
-      img.addEventListener('load', () => { logoMarca.style.display = 'block'; });
-      if (img.complete) { logoMarca.style.display = 'block'; }
+      img.addEventListener('load', () => {
+        if (logoMarcaAtual) {
+          logoMarca.style.display = 'block';
+        }
+      });
+      if (img.complete && logoMarcaAtual) {
+        logoMarca.style.display = 'block';
+      }
 
       const info = document.createElement('div');
       info.className = 'info';
@@ -1651,7 +1655,7 @@
       imgWrapper.appendChild(img);
 
       const logoDetalhe = document.createElement('img');
-      logoDetalhe.src = 'img/logo.jpg';
+      logoDetalhe.src = logoMarcaAtual || 'img/logo.jpg';
       logoDetalhe.alt = 'Logo Pasterry';
       logoDetalhe.className = 'logo-marca-detalhe';
       logoDetalhe.style.position = 'absolute';
@@ -1667,11 +1671,17 @@
       logoDetalhe.style.objectFit = 'contain';
       logoDetalhe.style.zIndex = '2';
       logoDetalhe.style.pointerEvents = 'none';
-      logoDetalhe.style.display = 'none';
+      logoDetalhe.style.display = logoMarcaAtual ? 'block' : 'none';
       imgWrapper.appendChild(logoDetalhe);
 
-      img.addEventListener('load', () => { logoDetalhe.style.display = 'block'; });
-      if (img.complete) { logoDetalhe.style.display = 'block'; }
+      img.addEventListener('load', () => {
+        if (logoMarcaAtual) {
+          logoDetalhe.style.display = 'block';
+        }
+      });
+      if (img.complete && logoMarcaAtual) {
+        logoDetalhe.style.display = 'block';
+      }
 
       sizeImageWrap.appendChild(imgWrapper);
 
@@ -1832,16 +1842,17 @@
       updateCheckoutText();
       iniciarCarrossel();
 
-      db.collection('config').doc('loja').get().then(doc => {
+      // Escuta em tempo real para logos e status
+      db.collection('config').doc('loja').onSnapshot((doc) => {
         if (doc.exists) {
           const data = doc.data();
           if (data.logoUrl) {
             document.getElementById('logoImg').src = data.logoUrl;
           }
-          const logoMarcaUrl = data.logoMarca || '';
+          logoMarcaAtual = data.logoMarca || '';
           document.querySelectorAll('.logo-marca, .logo-marca-detalhe').forEach(el => {
-            if (logoMarcaUrl) {
-              el.src = logoMarcaUrl;
+            if (logoMarcaAtual) {
+              el.src = logoMarcaAtual;
               el.style.display = 'block';
             } else {
               el.style.display = 'none';
@@ -1850,9 +1861,13 @@
           if (data.lojaAberta !== undefined) {
             lojaAberta = data.lojaAberta;
             atualizarStatusLojaUI();
+            // Re-renderizar para atualizar botões
+            renderProducts();
           }
         }
-      }).catch(() => {});
+      }, (error) => {
+        console.error('Erro ao carregar logos:', error);
+      });
     }
 
     function iniciarApp() {
@@ -1861,15 +1876,6 @@
       carregarMenu();
       carregarCardapio();
       setInterval(atualizarStatusHorario, 60000);
-      setInterval(() => {
-        db.collection('config').doc('loja').get().then(doc => {
-          if (doc.exists && doc.data().lojaAberta !== undefined) {
-            lojaAberta = doc.data().lojaAberta;
-            atualizarStatusLojaUI();
-            renderProducts();
-          }
-        }).catch(() => {});
-      }, 30000);
     }
 
     iniciarApp();
