@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
   <title>Pasterry - Totem</title>
   <style>
-    /* ===== CSS (MANTIDO, MAS REMOVI O HEADER-ANUNCIO E AJUSTEI O HEADER) ===== */
+    /* ===== CSS ===== */
     :root {
       --bg: #1A1210;
       --card: #E8F5E9;
@@ -60,7 +60,35 @@
     }
     .logo img { width: 100%; height: 100%; object-fit: cover; display: block; }
 
-    /* ===== HEADER ACTIONS (MENU) ===== */
+    /* STATUS E HORÁRIO */
+    .status-horario {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,0.3);
+      backdrop-filter: blur(4px);
+      border-radius: 12px;
+      padding: 4px 12px;
+      text-align: center;
+      line-height: 1.2;
+      font-size: clamp(12px, 1.8vw, 16px);
+    }
+    .status-horario .status {
+      font-weight: 800;
+      letter-spacing: 0.5px;
+    }
+    .status-horario .status.aberto { color: #4caf50; }
+    .status-horario .status.fechado { color: #f44336; }
+    .status-horario .horario {
+      font-weight: 600;
+      color: #ccc;
+      font-size: clamp(10px, 1.4vw, 14px);
+    }
+
+    /* HEADER ACTIONS (MENU) */
     .header-actions {
       display: flex;
       align-items: center;
@@ -141,7 +169,7 @@
     }
     .menu-dropdown .item.tempo-entrega .icon { font-size: 18px; }
 
-    /* ===== MAIN ===== */
+    /* MAIN */
     main {
       flex: 1;
       display: flex;
@@ -151,7 +179,7 @@
       box-sizing: border-box;
     }
 
-    /* ===== CATEGORIAS – 5 BOTÕES POR VEZ ===== */
+    /* CATEGORIAS */
     .categories {
       display: flex;
       gap: 9px;
@@ -200,7 +228,7 @@
       background: #ffe066;
     }
 
-    /* ===== PRODUTOS ===== */
+    /* PRODUTOS */
     .cat-section {
       display: block;
       margin: 4px 0 12px;
@@ -233,6 +261,7 @@
     .content { display: flex; gap: 8px; }
     .left { flex: 1; display: flex; flex-direction: column; min-width: 0; }
 
+    /* Product card */
     .product {
       background: rgba(0,0,0,0.15);
       padding: 12px;
@@ -356,7 +385,7 @@
     .btn.secondary { background: var(--glass); color: #1a1600; opacity: .9; }
     .btn:disabled { opacity: .6; cursor: not-allowed; }
 
-    /* ===== OVERLAYS ===== */
+    /* OVERLAYS (mantidos) */
     .overlay {
       position: fixed;
       inset: 0;
@@ -455,7 +484,6 @@
       min-height: 44px !important;
     }
 
-    /* SHARE OVERLAY */
     .share-overlay {
       position: fixed;
       inset: 0;
@@ -573,7 +601,6 @@
     @keyframes toastIn { to { transform: translateY(0); opacity: 1; } }
     @keyframes toastOut { to { transform: translateY(-8px); opacity: 0; } }
 
-    /* BOTÃO DO CARRINHO */
     .footer-bar {
       position: fixed;
       left: 0;
@@ -784,6 +811,10 @@
   <div class="app" id="app">
     <header id="mainHeader">
       <div class="logo" aria-hidden="true"><img id="logoImg" src="img/logo.jpg" alt="Logo Pasterry"></div>
+      <div class="status-horario" id="statusHorario">
+        <span class="status" id="statusAberto">Carregando...</span>
+        <span class="horario" id="horarioTexto"></span>
+      </div>
       <div class="header-actions">
         <button class="menu-btn" id="menuToggle" aria-label="Menu">
           <span class="bar"></span>
@@ -882,6 +913,106 @@
     const db = firebase.firestore();
 
     // ============================================================
+    // FUNÇÕES DE HORÁRIO
+    // ============================================================
+    const DIAS_SEMANA = ['domingo', 'segunda', 'terca', 'quarta', 'quinta', 'sexta', 'sabado'];
+    let horariosCache = {};
+    let statusAtual = { aberto: false, texto: 'Fechado', horario: '' };
+
+    function atualizarStatusHorario() {
+      const statusEl = document.getElementById('statusAberto');
+      const horarioEl = document.getElementById('horarioTexto');
+
+      // Verifica se temos dados de horário
+      if (!horariosCache || Object.keys(horariosCache).length === 0) {
+        statusEl.textContent = '⚠️ Sem horário';
+        statusEl.className = 'status fechado';
+        horarioEl.textContent = 'Configure o horário no painel';
+        return;
+      }
+
+      // Dia atual (0 = domingo)
+      const diaAtual = new Date().getDay();
+      const diaNome = DIAS_SEMANA[diaAtual];
+      const periodos = horariosCache[diaNome] || [];
+
+      // Se não houver período para hoje, está fechado
+      if (periodos.length === 0) {
+        statusEl.textContent = '🔴 Fechado';
+        statusEl.className = 'status fechado';
+        horarioEl.textContent = 'Hoje: Fechado';
+        return;
+      }
+
+      // Hora atual (HH:MM)
+      const agora = new Date();
+      const horaAtual = String(agora.getHours()).padStart(2, '0') + ':' + String(agora.getMinutes()).padStart(2, '0');
+
+      // Verifica se está dentro de algum período
+      let aberto = false;
+      let periodoAtual = null;
+      for (const p of periodos) {
+        if (horaAtual >= p.inicio && horaAtual < p.fim) {
+          aberto = true;
+          periodoAtual = p;
+          break;
+        }
+      }
+
+      // Formata o horário para exibição
+      const formatPeriodo = (p) => `${p.inicio} - ${p.fim}`;
+      let horarioTexto = '';
+      if (periodos.length === 1) {
+        horarioTexto = `Hoje: ${formatPeriodo(periodos[0])}`;
+      } else {
+        horarioTexto = `Hoje: ${periodos.map(p => formatPeriodo(p)).join(' | ')}`;
+      }
+
+      if (aberto) {
+        statusEl.textContent = '🟢 Aberto';
+        statusEl.className = 'status aberto';
+        // Mostra até que horas está aberto
+        if (periodoAtual) {
+          horarioTexto += ` (até ${periodoAtual.fim})`;
+        }
+      } else {
+        statusEl.textContent = '🔴 Fechado';
+        statusEl.className = 'status fechado';
+        // Mostra o próximo horário (se houver)
+        const agoraNum = parseInt(horaAtual.replace(':', ''));
+        let proximo = null;
+        for (const p of periodos) {
+          const inicioNum = parseInt(p.inicio.replace(':', ''));
+          if (inicioNum > agoraNum) {
+            proximo = p;
+            break;
+          }
+        }
+        if (proximo) {
+          horarioTexto += ` (abre às ${proximo.inicio})`;
+        }
+      }
+      horarioEl.textContent = horarioTexto;
+    }
+
+    function carregarHorarios() {
+      db.collection('config').doc('horarios').get().then(doc => {
+        if (doc.exists) {
+          horariosCache = doc.data() || {};
+          // Garantir que todas as chaves existam (se não, array vazio)
+          DIAS_SEMANA.forEach(dia => {
+            if (!horariosCache[dia]) horariosCache[dia] = [];
+          });
+          atualizarStatusHorario();
+        }
+      }).catch(() => {
+        // Fallback: mostrar mensagem
+        document.getElementById('statusAberto').textContent = '⚠️ Erro';
+        document.getElementById('horarioTexto').textContent = 'Não foi possível carregar horários';
+      });
+    }
+
+    // ============================================================
     // CARREGAR CARDÁPIO DO FIRESTORE
     // ============================================================
     let CATEGORIES = [];
@@ -897,12 +1028,14 @@
             const data = doc.data();
             CATEGORIES.push({
               id: doc.id,
-              name: data.name
+              name: data.name,
+              ordem: data.ordem || 999
             });
           });
-          CATEGORIES.sort((a, b) => a.name.localeCompare(b.name));
+          // Ordena por ordem
+          CATEGORIES.sort((a, b) => (a.ordem || 999) - (b.ordem || 999));
           if (CATEGORIES.length === 0) {
-            CATEGORIES = [{ id: 'geral', name: 'Geral' }];
+            CATEGORIES = [{ id: 'geral', name: 'Geral', ordem: 0 }];
           }
           PRODUCTS = {};
           CATEGORIES.forEach(cat => { PRODUCTS[cat.id] = []; });
@@ -1641,7 +1774,6 @@
           }
           // Logo de marca (sobreposição)
           const logoMarcaUrl = data.logoMarca || '';
-          // Atualizar todos os elementos com classe .logo-marca e .logo-marca-detalhe
           document.querySelectorAll('.logo-marca, .logo-marca-detalhe').forEach(el => {
             if (logoMarcaUrl) {
               el.src = logoMarcaUrl;
@@ -1655,7 +1787,10 @@
     }
 
     function iniciarApp() {
+      carregarHorarios();
       carregarCardapio();
+      // Atualizar status a cada minuto
+      setInterval(atualizarStatusHorario, 60000);
     }
 
     iniciarApp();
