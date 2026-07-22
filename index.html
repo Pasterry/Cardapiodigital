@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
   <title>Pasterry - Totem</title>
   <style>
-    /* ===== CSS COMPLETO (MANTIDO) ===== */
+    /* ===== CSS COMPLETO ===== */
     :root {
       --bg: #1A1210;
       --card: #E8F5E9;
@@ -44,11 +44,12 @@
       border-bottom: none !important;
       box-shadow: none !important;
       min-height: 70px;
-      gap: 12px;
+      gap: 8px;
+      flex-wrap: wrap;
     }
     .logo {
-      width: 70px;
-      height: 70px;
+      width: 60px;
+      height: 60px;
       border-radius: 100px;
       overflow: hidden;
       display: flex;
@@ -63,7 +64,7 @@
     /* STATUS E HORÁRIO */
     .status-horario {
       flex: 1;
-      min-width: 0;
+      min-width: 100px;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -71,10 +72,10 @@
       background: rgba(0,0,0,0.3);
       backdrop-filter: blur(4px);
       border-radius: 12px;
-      padding: 4px 12px;
+      padding: 4px 10px;
       text-align: center;
       line-height: 1.2;
-      font-size: clamp(12px, 1.8vw, 16px);
+      font-size: clamp(11px, 1.6vw, 15px);
     }
     .status-horario .status {
       font-weight: 800;
@@ -85,13 +86,46 @@
     .status-horario .horario {
       font-weight: 600;
       color: #ccc;
-      font-size: clamp(10px, 1.4vw, 14px);
+      font-size: clamp(9px, 1.2vw, 12px);
+    }
+
+    /* CAMPO DE PESQUISA */
+    .search-box {
+      display: flex;
+      align-items: center;
+      background: rgba(0,0,0,0.4);
+      backdrop-filter: blur(4px);
+      border-radius: 30px;
+      padding: 4px 12px 4px 16px;
+      gap: 6px;
+      flex: 0 1 200px;
+      min-width: 120px;
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+    .search-box input {
+      background: transparent;
+      border: none;
+      color: #fff;
+      padding: 6px 0;
+      width: 100%;
+      font-size: 0.9rem;
+      outline: none;
+    }
+    .search-box input::placeholder {
+      color: #9aa6b2;
+    }
+    .search-box svg {
+      width: 18px;
+      height: 18px;
+      stroke: #9aa6b2;
+      stroke-width: 2;
+      flex-shrink: 0;
     }
 
     .header-actions {
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 6px;
       flex-shrink: 0;
       position: relative;
     }
@@ -99,13 +133,13 @@
       background: linear-gradient(135deg, #dc3545 0%, #ff4757 100%);
       border: none;
       border-radius: 30px;
-      width: 44px;
-      height: 44px;
+      width: 40px;
+      height: 40px;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      gap: 4px;
+      gap: 3px;
       cursor: pointer;
       box-shadow: 0 4px 15px rgba(220, 53, 69, 0.4), inset 0 -2px 0 rgba(0, 0, 0, 0.2);
       transition: transform .15s ease;
@@ -114,8 +148,8 @@
     .menu-btn:active { transform: scale(0.95); }
     .menu-btn .bar {
       display: block;
-      width: 22px;
-      height: 3px;
+      width: 20px;
+      height: 2.5px;
       background: #fff;
       border-radius: 2px;
       transition: all 0.2s ease;
@@ -123,11 +157,11 @@
 
     .menu-dropdown {
       position: absolute;
-      top: 52px;
+      top: 48px;
       right: 0;
       background: #272323;
       border-radius: 12px;
-      min-width: 200px;
+      min-width: 180px;
       box-shadow: 0 8px 30px rgba(0,0,0,0.7);
       border: 1px solid rgba(255,255,255,0.05);
       display: none;
@@ -140,25 +174,20 @@
     .menu-dropdown .item {
       display: flex;
       align-items: center;
-      gap: 12px;
-      padding: 12px 16px;
+      gap: 10px;
+      padding: 10px 14px;
       color: #e6eef6;
       text-decoration: none;
       font-weight: 600;
-      font-size: 14px;
+      font-size: 13px;
       transition: background 0.15s ease;
       border-bottom: 1px solid rgba(255,255,255,0.04);
     }
     .menu-dropdown .item:last-child { border-bottom: none; }
     .menu-dropdown .item:hover { background: rgba(255,255,255,0.08); }
-    .menu-dropdown .item .icon { font-size: 20px; width: 28px; text-align: center; }
-    .menu-dropdown .item .icon-instagram {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      width: 28px;
-    }
-    .menu-dropdown .item .icon-instagram svg { width: 22px; height: 22px; fill: #fff; }
+    .menu-dropdown .item .icon { font-size: 18px; width: 26px; text-align: center; }
+    .menu-dropdown .item .icon-instagram { display: flex; align-items: center; justify-content: center; width: 26px; }
+    .menu-dropdown .item .icon-instagram svg { width: 20px; height: 20px; fill: #fff; }
     .menu-dropdown .item.tempo-entrega {
       color: #FFD700;
       font-weight: 700;
@@ -166,8 +195,9 @@
       background: rgba(255,215,0,0.05);
       border-top: 1px solid rgba(255,215,0,0.1);
     }
-    .menu-dropdown .item.tempo-entrega .icon { font-size: 18px; }
+    .menu-dropdown .item.tempo-entrega .icon { font-size: 16px; }
 
+    /* MAIN */
     main {
       flex: 1;
       display: flex;
@@ -179,24 +209,22 @@
 
     .categories {
       display: flex;
-      gap: 9px;
+      gap: 8px;
       overflow-x: auto;
       padding: 4px 2px;
-      background: transparent !important;
       scrollbar-width: none;
       -ms-overflow-style: none;
       align-items: stretch;
       scroll-behavior: smooth;
       flex-wrap: nowrap;
       -webkit-overflow-scrolling: touch;
-      border-radius: 0;
       scroll-snap-type: x mandatory;
     }
     .categories::-webkit-scrollbar { display: none; }
     .cat {
       flex: 0 0 calc(20% - 8px);
-      min-width: 55px;
-      padding: 8px 4px;
+      min-width: 50px;
+      padding: 6px 4px;
       background: var(--glass);
       border-radius: 30px;
       display: flex;
@@ -204,8 +232,7 @@
       justify-content: center;
       cursor: pointer;
       font-weight: 900;
-      font-size: clamp(10px, 1.4vw, 14px);
-      letter-spacing: 0.2px;
+      font-size: clamp(9px, 1.2vw, 13px);
       color: #1a1600;
       text-align: center;
       word-break: break-word;
@@ -213,7 +240,7 @@
       line-height: 1.2;
       transition: transform .08s ease, background 0.2s;
       border: none;
-      min-height: 38px;
+      min-height: 34px;
       flex-shrink: 0;
       box-shadow: 0 2px 8px rgba(0,0,0,0.3);
       scroll-snap-align: start;
@@ -259,13 +286,13 @@
 
     .product {
       background: rgba(0,0,0,0.15);
-      padding: 12px;
+      padding: 10px;
       border-radius: 14px;
       display: flex;
       flex-direction: row;
-      gap: 14px;
+      gap: 12px;
       align-items: center;
-      min-height: 160px;
+      min-height: 140px;
       overflow: hidden;
       scroll-margin-top: 20px;
       border: 1px solid rgba(255, 255, 255, 0.04);
@@ -276,11 +303,11 @@
       position: absolute;
       top: 6px;
       right: 6px;
-      background: rgba(0, 0, 0, 0.4);
+      background: rgba(0,0,0,0.4);
       border: none;
       border-radius: 50%;
-      width: 30px;
-      height: 30px;
+      width: 26px;
+      height: 26px;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -289,24 +316,16 @@
       transition: background 0.2s, transform 0.2s;
       z-index: 5;
       backdrop-filter: blur(4px);
-      padding: 3px;
+      padding: 2px;
     }
     .share-btn:hover { background: rgba(255, 255, 255, 0.2); }
     .share-btn:active { transform: scale(0.85); }
-    .share-btn svg {
-      width: 16px;
-      height: 16px;
-      stroke: #fff;
-      stroke-width: 2;
-      stroke-linecap: round;
-      stroke-linejoin: round;
-      fill: none;
-    }
+    .share-btn svg { width: 14px; height: 14px; stroke: #fff; stroke-width: 2; fill: none; }
 
     .product .media {
-      flex: 0 0 150px;
-      width: 150px;
-      height: 150px;
+      flex: 0 0 120px;
+      width: 120px;
+      height: 120px;
       border-radius: 12px;
       overflow: hidden;
       background: #0c1220;
@@ -319,15 +338,14 @@
       object-fit: cover;
       display: block;
     }
-    .product .media::after { display: none; }
     .product .media .logo-marca {
       position: absolute;
-      bottom: 6px;
-      left: 6px;
-      width: 40px;
-      height: 40px;
+      bottom: 4px;
+      left: 4px;
+      width: 32px;
+      height: 32px;
       border-radius: 50%;
-      border: 2px solid rgba(255, 255, 255, 0.3);
+      border: 2px solid rgba(255,255,255,0.3);
       box-shadow: 0 2px 8px rgba(0,0,0,0.5);
       background: rgba(0,0,0,0.3);
       padding: 2px;
@@ -341,31 +359,37 @@
       flex: 1;
       display: flex;
       flex-direction: column;
-      gap: 4px;
+      gap: 3px;
       min-width: 0;
     }
-    .title { font-weight: 700; font-size: clamp(13px, 2.2vw, 18px); line-height: 1.2; }
-    .price { color: var(--danger); font-weight: 700; font-size: clamp(13px, 1.8vw, 18px); }
-    .muted { color: #9aa6b2; font-size: clamp(11px, 1.6vw, 13px); }
+    .title { font-weight: 700; font-size: clamp(12px, 2vw, 16px); line-height: 1.2; }
+    .price { color: var(--danger); font-weight: 700; font-size: clamp(12px, 1.6vw, 16px); }
+    .muted { color: #9aa6b2; font-size: clamp(10px, 1.4vw, 12px); }
     .add-btn {
       width: auto;
-      padding: 5px 14px;
+      padding: 4px 12px;
       border-radius: 6px;
       background: var(--ok);
       border: 0;
       color: #fff;
       font-weight: 800;
       cursor: pointer;
-      font-size: clamp(11px, 1.6vw, 14px);
+      font-size: clamp(10px, 1.4vw, 13px);
       align-self: flex-end;
-      margin-top: 4px;
+      margin-top: 3px;
       flex-shrink: 0;
     }
-    .add-btn:active {
+    .add-btn:disabled {
+      background: #555;
+      cursor: not-allowed;
+      opacity: 0.6;
+    }
+    .add-btn:active:not(:disabled) {
       transform: scale(0.97);
       filter: brightness(0.9);
       box-shadow: inset 0 3px 6px rgba(0, 0, 0, .25);
     }
+
     .btn {
       flex: 1;
       padding: 12px;
@@ -380,6 +404,7 @@
     .btn.secondary { background: var(--glass); color: #1a1600; opacity: .9; }
     .btn:disabled { opacity: .6; cursor: not-allowed; }
 
+    /* OVERLAYS */
     .overlay {
       position: fixed;
       inset: 0;
@@ -438,7 +463,7 @@
     .size-image {
       width: 100%;
       height: auto;
-      max-height: 200px;
+      max-height: 180px;
       object-fit: cover;
       border-radius: 12px;
       background: #0c1220;
@@ -446,12 +471,12 @@
     }
     .size-image-wrap .logo-marca-detalhe {
       position: absolute;
-      bottom: 12px;
-      left: 12px;
-      width: 48px;
-      height: 48px;
+      bottom: 10px;
+      left: 10px;
+      width: 40px;
+      height: 40px;
       border-radius: 50%;
-      border: 2px solid rgba(255, 255, 255, 0.3);
+      border: 2px solid rgba(255,255,255,0.3);
       box-shadow: 0 2px 8px rgba(0,0,0,0.5);
       background: rgba(0,0,0,0.3);
       padding: 2px;
@@ -478,6 +503,7 @@
       min-height: 44px !important;
     }
 
+    /* SHARE OVERLAY */
     .share-overlay {
       position: fixed;
       inset: 0;
@@ -493,7 +519,7 @@
     .share-modal {
       background: #272323;
       border-radius: 20px;
-      padding: 28px 30px;
+      padding: 24px;
       max-width: 400px;
       width: 100%;
       box-shadow: 0 30px 80px rgba(0,0,0,0.8);
@@ -504,26 +530,26 @@
       from { opacity: 0; transform: scale(0.9) translateY(20px); }
       to { opacity: 1; transform: scale(1) translateY(0); }
     }
-    .share-modal h3 { font-size: 22px; font-weight: 800; margin: 0 0 8px 0; color: #fff; text-align: center; }
-    .share-modal .subtitle { color: #9aa6b2; text-align: center; font-size: 14px; margin-bottom: 20px; }
-    .share-modal .share-options { display: flex; flex-direction: column; gap: 12px; }
+    .share-modal h3 { font-size: 20px; font-weight: 800; margin: 0 0 6px 0; color: #fff; text-align: center; }
+    .share-modal .subtitle { color: #9aa6b2; text-align: center; font-size: 13px; margin-bottom: 16px; }
+    .share-modal .share-options { display: flex; flex-direction: column; gap: 10px; }
     .share-btn-option {
       display: flex;
       align-items: center;
-      gap: 14px;
-      padding: 14px 18px;
+      gap: 12px;
+      padding: 12px 16px;
       border-radius: 14px;
       border: none;
       background: rgba(255,255,255,0.05);
       color: #fff;
       font-weight: 700;
-      font-size: 16px;
+      font-size: 15px;
       cursor: pointer;
       transition: background 0.2s, transform 0.1s;
       width: 100%;
     }
     .share-btn-option:active { transform: scale(0.97); }
-    .share-btn-option svg { width: 28px; height: 28px; flex-shrink: 0; }
+    .share-btn-option svg { width: 24px; height: 24px; flex-shrink: 0; }
     .share-btn-option.whatsapp {
       background: rgba(37, 211, 102, 0.2);
       border: 1px solid rgba(37, 211, 102, 0.3);
@@ -535,21 +561,21 @@
     }
     .share-btn-option.copy:hover { background: rgba(255,255,255,0.15); }
     .share-btn-option .label { flex: 1; text-align: left; }
-    .share-btn-option .icon-wrap { display: flex; align-items: center; justify-content: center; }
     .share-modal .close-share {
-      margin-top: 16px;
+      margin-top: 14px;
       background: none;
       border: none;
       color: #6c7a8a;
-      font-size: 14px;
+      font-size: 13px;
       font-weight: 600;
       cursor: pointer;
-      padding: 8px;
+      padding: 6px;
       width: 100%;
       text-align: center;
     }
     .share-modal .close-share:hover { color: #fff; }
 
+    /* TOASTS */
     #toastWrap {
       position: fixed;
       left: 0;
@@ -571,17 +597,17 @@
       color: #e6eef6;
       border: 1px solid rgba(255, 255, 255, .06);
       box-shadow: 0 10px 30px rgba(0, 0, 0, .5);
-      padding: 12px 14px;
+      padding: 10px 14px;
       border-radius: 12px;
-      min-width: 200px;
+      min-width: 180px;
       max-width: 90vw;
       transform: translateY(-12px);
       opacity: 0;
       animation: toastIn .18s ease forwards, toastOut .18s ease forwards 1.6s;
     }
     .toast .check {
-      width: 28px;
-      height: 28px;
+      width: 24px;
+      height: 24px;
       border-radius: 8px;
       background: var(--ok);
       display: grid;
@@ -589,17 +615,15 @@
       font-weight: 900;
       color: #fff;
     }
-    .toast .title { font-weight: 800; font-size: 15px; line-height: 1.2; }
-    .toast .sub { color: var(--muted); font-size: 13px; }
-    @keyframes toastIn { to { transform: translateY(0); opacity: 1; } }
-    @keyframes toastOut { to { transform: translateY(-8px); opacity: 0; } }
+    .toast .title { font-weight: 800; font-size: 14px; line-height: 1.2; }
+    .toast .sub { color: var(--muted); font-size: 12px; }
 
     .footer-bar {
       position: fixed;
       left: 0;
       right: 0;
       bottom: 0;
-      padding: 8px 10px calc(8px + env(safe-area-inset-bottom));
+      padding: 6px 10px calc(6px + env(safe-area-inset-bottom));
       background: linear-gradient(180deg, rgba(7, 20, 40, 0.0), rgba(7, 20, 40, 0.85) 30%, rgba(7, 20, 40, 0.95));
       backdrop-filter: blur(6px);
       border-top: 1px solid rgba(255, 255, 255, 0.06);
@@ -610,13 +634,13 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 8px;
-      padding: 14px 16px;
+      gap: 6px;
+      padding: 12px 16px;
       border-radius: 12px;
       background: var(--danger);
       color: #fff;
       font-weight: 900;
-      font-size: clamp(16px, 3vw, 20px);
+      font-size: clamp(14px, 2.5vw, 18px);
       border: 0;
       cursor: pointer;
       box-shadow: 0 10px 30px rgba(0, 0, 0, .45), inset 0 -2px 0 rgba(0, 0, 0, .15);
@@ -628,12 +652,12 @@
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
-      font-size: clamp(12px, 2vw, 16px);
+      font-size: clamp(11px, 1.8vw, 14px);
     }
-    .footer-cart .cart-total { font-weight: 900; margin-right: 6px; white-space: nowrap; font-size: clamp(14px, 2.5vw, 18px); }
+    .footer-cart .cart-total { font-weight: 900; margin-right: 4px; white-space: nowrap; font-size: clamp(12px, 2.2vw, 16px); }
     .footer-cart .cart-badge {
-      min-width: 24px;
-      height: 24px;
+      min-width: 22px;
+      height: 22px;
       padding: 0 6px;
       border-radius: 999px;
       display: inline-flex;
@@ -642,20 +666,19 @@
       background: rgba(0, 0, 0, .25);
       color: #fff;
       font-weight: 900;
-      font-size: 12px;
+      font-size: 11px;
       box-shadow: inset 0 -2px 0 rgba(0, 0, 0, .2);
     }
-    @media (max-width: 380px) { .footer-cart .cart-label { display: none; } }
 
     .group-header {
       font-weight: 900;
-      font-size: clamp(16px, 3.5vw, 22px);
+      font-size: clamp(14px, 3vw, 20px);
       background: linear-gradient(135deg, #FFD700, #FFA500);
       color: #1a1600;
-      padding: 6px 14px;
+      padding: 4px 12px;
       border-radius: 30px;
       display: inline-block;
-      margin-bottom: 8px;
+      margin-bottom: 6px;
       letter-spacing: 0.3px;
       box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3);
       text-transform: uppercase;
@@ -671,12 +694,12 @@
       backdrop-filter: blur(8px);
       border: 1px solid rgba(255, 215, 0, 0.3);
       border-radius: 20px;
-      padding: 24px 30px;
+      padding: 20px 24px;
       display: none;
       flex-direction: column;
       align-items: center;
-      gap: 10px;
-      min-width: 200px;
+      gap: 8px;
+      min-width: 180px;
       max-width: 80vw;
       box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8);
       opacity: 0;
@@ -688,9 +711,9 @@
       opacity: 1;
       transform: translate(-50%, -50%) scale(1);
     }
-    #centerToast .check-icon { font-size: 40px; color: #22c55e; }
-    #centerToast .msg { color: #fff; font-weight: 800; font-size: clamp(18px, 4vw, 22px); text-align: center; }
-    #centerToast .sub-msg { color: #9aa6b2; font-size: clamp(14px, 2.5vw, 16px); }
+    #centerToast .check-icon { font-size: 36px; color: #22c55e; }
+    #centerToast .msg { color: #fff; font-weight: 800; font-size: clamp(16px, 3.5vw, 20px); text-align: center; }
+    #centerToast .sub-msg { color: #9aa6b2; font-size: clamp(12px, 2vw, 14px); }
     @keyframes descerCarrinho {
       0% { top: 50%; opacity: 1; transform: translate(-50%, -50%) scale(1); }
       100% { top: 110%; opacity: 0; transform: translate(-50%, -50%) scale(0.6); }
@@ -722,45 +745,47 @@
     }
 
     #successOverlay .dialog { max-width: 90%; }
-    #successImg { width: 150px; height: 150px; }
+    #successImg { width: 140px; height: 140px; }
     @media (max-width: 480px) {
-      #successImg { width: 120px; height: 120px; }
-      #successTitle { font-size: 20px; }
+      #successImg { width: 100px; height: 100px; }
+      #successTitle { font-size: 18px; }
     }
 
     @media (max-width: 420px) {
-      .product .media { flex: 0 0 100px; width: 100px; height: 100px; }
-      .product { padding: 8px; gap: 10px; min-height: 110px; }
-      .share-btn { width: 26px; height: 26px; top: 4px; right: 4px; padding: 2px; }
-      .share-btn svg { width: 14px; height: 14px; }
-      .title { font-size: clamp(11px, 3vw, 14px); }
-      .price { font-size: clamp(11px, 2.5vw, 14px); }
-      .muted { font-size: clamp(9px, 2vw, 11px); }
-      .add-btn { padding: 4px 10px; font-size: clamp(9px, 2vw, 12px); }
-      .product .media .logo-marca { width: 30px; height: 30px; bottom: 4px; left: 4px; }
-      .size-image-wrap .logo-marca-detalhe { width: 36px; height: 36px; bottom: 8px; left: 8px; }
-      .menu-btn { width: 40px; height: 40px; }
-      .menu-btn .bar { width: 20px; height: 2.5px; }
-      .menu-dropdown { min-width: 170px; right: -10px; }
-    }
-    @media (max-width: 360px) {
       .product .media { flex: 0 0 80px; width: 80px; height: 80px; }
-      .product { gap: 8px; padding: 6px; min-height: 90px; }
-      .share-btn { width: 22px; height: 22px; padding: 2px; }
+      .product { padding: 8px; gap: 8px; min-height: 90px; }
+      .share-btn { width: 22px; height: 22px; top: 4px; right: 4px; padding: 2px; }
       .share-btn svg { width: 12px; height: 12px; }
-      .add-btn { padding: 3px 8px; font-size: 9px; }
+      .title { font-size: clamp(10px, 2.5vw, 13px); }
+      .price { font-size: clamp(10px, 2.2vw, 13px); }
+      .muted { font-size: clamp(8px, 1.6vw, 10px); }
+      .add-btn { padding: 3px 8px; font-size: clamp(8px, 1.6vw, 11px); }
       .product .media .logo-marca { width: 24px; height: 24px; bottom: 3px; left: 3px; }
       .size-image-wrap .logo-marca-detalhe { width: 30px; height: 30px; bottom: 6px; left: 6px; }
       .menu-btn { width: 36px; height: 36px; }
       .menu-btn .bar { width: 18px; height: 2px; }
-      .menu-dropdown { min-width: 150px; right: -15px; }
+      .menu-dropdown { min-width: 150px; right: -10px; }
+      .search-box { flex: 0 1 120px; padding: 2px 8px; }
+      .search-box input { font-size: 0.8rem; }
+    }
+    @media (max-width: 360px) {
+      .product .media { flex: 0 0 70px; width: 70px; height: 70px; }
+      .product { gap: 6px; padding: 6px; min-height: 80px; }
+      .share-btn { width: 18px; height: 18px; padding: 2px; }
+      .share-btn svg { width: 10px; height: 10px; }
+      .add-btn { padding: 2px 6px; font-size: 8px; }
+      .product .media .logo-marca { width: 20px; height: 20px; bottom: 2px; left: 2px; }
+      .size-image-wrap .logo-marca-detalhe { width: 24px; height: 24px; bottom: 4px; left: 4px; }
+      .menu-btn { width: 32px; height: 32px; }
+      .menu-btn .bar { width: 16px; height: 2px; }
+      .menu-dropdown { min-width: 130px; right: -15px; }
     }
   </style>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 </head>
 <body>
-  <!-- TOASTS E OVERLAYS (mantido) -->
+  <!-- ====== TOASTS E OVERLAYS ====== -->
   <div id="toastWrap" aria-live="polite" aria-atomic="true"></div>
   <div id="centerToast">
     <div class="check-icon">✅</div>
@@ -769,10 +794,10 @@
   </div>
   <div class="overlay" id="successOverlay" aria-hidden="true" style="display:none">
     <div class="dialog" role="dialog" aria-modal="true" aria-labelledby="successTitle" style="max-width:500px; flex-direction:column; align-items:center; text-align:center; gap:12px">
-      <img id="successImg" src="img/sucesso.png" alt="Pedido finalizado com sucesso" style="width:180px;height:180px;object-fit:contain;border-radius:16px;background:#021522;box-shadow:0 10px 30px rgba(0,0,0,.5)">
-      <div id="successTitle" style="font-weight:900;font-size:22px;color:var(--accent)">Pedido confirmado!</div>
-      <div class="muted" id="successMsg" style="font-size:14px">Seu pedido foi enviado para a cozinha e está sendo impresso.</div>
-      <button class="btn" id="okSuccess" type="button" style="width:160px">OK</button>
+      <img id="successImg" src="img/sucesso.png" alt="Pedido finalizado com sucesso" style="width:160px;height:160px;object-fit:contain;border-radius:16px;background:#021522;box-shadow:0 10px 30px rgba(0,0,0,.5)">
+      <div id="successTitle" style="font-weight:900;font-size:20px;color:var(--accent)">Pedido confirmado!</div>
+      <div class="muted" id="successMsg" style="font-size:13px">Seu pedido foi enviado para a cozinha e está sendo impresso.</div>
+      <button class="btn" id="okSuccess" type="button" style="width:140px">OK</button>
     </div>
   </div>
   <div id="printArea" aria-hidden="true"></div>
@@ -784,12 +809,12 @@
         <button class="share-btn-option whatsapp" id="shareWhatsapp">
           <span class="icon-wrap"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg></span>
           <span class="label">WhatsApp</span>
-          <span style="color:#9aa6b2;font-size:13px;">Enviar link</span>
+          <span style="color:#9aa6b2;font-size:12px;">Enviar link</span>
         </button>
         <button class="share-btn-option copy" id="shareCopy">
           <span class="icon-wrap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg></span>
           <span class="label">Copiar link</span>
-          <span style="color:#9aa6b2;font-size:13px;">📋</span>
+          <span style="color:#9aa6b2;font-size:12px;">📋</span>
         </button>
       </div>
       <button class="close-share" id="closeShare">Cancelar</button>
@@ -802,6 +827,12 @@
       <div class="status-horario" id="statusHorario">
         <span class="status" id="statusAberto">Carregando...</span>
         <span class="horario" id="horarioTexto"></span>
+      </div>
+      <div class="search-box">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+        </svg>
+        <input type="text" id="searchInput" placeholder="Buscar..." />
       </div>
       <div class="header-actions">
         <button class="menu-btn" id="menuToggle" aria-label="Menu">
@@ -866,7 +897,7 @@
   <div class="footer-bar">
     <button class="btn cart-btn footer-cart" id="checkoutBtn" type="button" aria-label="Ver carrinho">
       <span class="cart-ico" aria-hidden="true">
-        <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor"><path d="M7 4h-2l-1 2h2l3.6 7.59-1.35 2.44C8.52 16.37 8.92 17 9.5 17h9v-2h-8.6l1.1-2h6.45c.75 0 1.41-.41 1.75-1.03L22 7H6.42l-.7-1.5C5.52 5.2 5.27 5 5 5H3V3h2c.83 0 1.55.52 1.83 1.3L7 4zm5 13c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm-6 0c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2z"/></svg>
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M7 4h-2l-1 2h2l3.6 7.59-1.35 2.44C8.52 16.37 8.92 17 9.5 17h9v-2h-8.6l1.1-2h6.45c.75 0 1.41-.41 1.75-1.03L22 7H6.42l-.7-1.5C5.52 5.2 5.27 5 5 5H3V3h2c.83 0 1.55.52 1.83 1.3L7 4zm5 13c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm-6 0c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2z"/></svg>
       </span>
       <span class="cart-label">Ver carrinho</span>
       <span class="cart-total" id="cartTotal">R$ 0,00</span>
@@ -891,6 +922,14 @@
     const db = firebase.firestore();
 
     // ============================================================
+    // ESTADO GLOBAL
+    // ============================================================
+    let CATEGORIES = [];
+    let PRODUCTS = {};
+    let lojaAberta = true;
+    let filtroTexto = '';
+
+    // ============================================================
     // HORÁRIOS
     // ============================================================
     const DIAS_SEMANA = ['domingo','segunda','terca','quarta','quinta','sexta','sabado'];
@@ -902,7 +941,7 @@
       if (!horariosCache || Object.keys(horariosCache).length === 0) {
         statusEl.textContent = '⚠️ Sem horário';
         statusEl.className = 'status fechado';
-        horarioEl.textContent = 'Configure o horário no painel';
+        horarioEl.textContent = 'Configure no painel';
         return;
       }
       const diaAtual = new Date().getDay();
@@ -923,8 +962,8 @@
       const formatPeriodo = (p) => `${p.inicio} - ${p.fim}`;
       let horarioTexto = periodos.map(p => formatPeriodo(p)).join(' | ');
       if (aberto) {
-        statusEl.textContent = '🟢 Aberto';
-        statusEl.className = 'status aberto';
+        statusEl.textContent = lojaAberta ? '🟢 Aberto' : '🟡 Fechado (loja)';
+        statusEl.className = 'status' + (lojaAberta ? ' aberto' : ' fechado');
       } else {
         statusEl.textContent = '🔴 Fechado';
         statusEl.className = 'status fechado';
@@ -950,11 +989,39 @@
     }
 
     // ============================================================
+    // STATUS DA LOJA
+    // ============================================================
+    function carregarStatusLoja() {
+      db.collection('config').doc('loja').get().then(doc => {
+        if (doc.exists && doc.data().lojaAberta !== undefined) {
+          lojaAberta = doc.data().lojaAberta;
+        } else {
+          lojaAberta = true;
+        }
+        atualizarStatusHorario(); // atualiza com o status da loja
+        aplicarBloqueioLoja();
+      }).catch(() => {
+        lojaAberta = true;
+        atualizarStatusHorario();
+        aplicarBloqueioLoja();
+      });
+    }
+
+    function aplicarBloqueioLoja() {
+      // Desabilitar/habilitar botões "Adicionar"
+      document.querySelectorAll('.add-btn').forEach(btn => {
+        btn.disabled = !lojaAberta;
+        if (!lojaAberta) {
+          btn.title = 'Loja fechada';
+        } else {
+          btn.title = '';
+        }
+      });
+    }
+
+    // ============================================================
     // CARDÁPIO
     // ============================================================
-    let CATEGORIES = [];
-    let PRODUCTS = {};
-
     function carregarCardapio() {
       db.collection('categorias')
         .where('ativo', '==', true)
@@ -988,11 +1055,13 @@
               price: data.price || null,
               sizes: data.sizes || null,
               units: data.units || null,
-              unidade: data.unidade || ''  // <-- NOVO
+              unidade: data.unidade || ''
             });
           });
           PRODUCTS = tempProducts;
           renderizarTudo();
+          // após renderizar, aplicar bloqueio se loja fechada
+          aplicarBloqueioLoja();
         });
     }
 
@@ -1026,17 +1095,19 @@
     }
 
     function getUnidade(produto) {
-      // Se o produto tem unidade definida, usa ela, senão fallback
       if (produto.unidade) return produto.unidade;
-      // Fallback antigo para compatibilidade
       const isAcai = (activeCategory === 'acai' || (produto.id || '').startsWith('acai'));
       return isAcai ? 'ml' : 'cm';
     }
 
     const formatBRL = (v) => v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 
+    function normalizarTexto(str) {
+      return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+    }
+
     // ============================================================
-    // CARRINHO E ESTADO GLOBAL
+    // CARRINHO E ESTADO
     // ============================================================
     const CART_KEY = 'pasterry_cart_v1';
     function loadCart() { try { return JSON.parse(localStorage.getItem(CART_KEY) || '[]'); } catch { return []; } }
@@ -1054,9 +1125,10 @@
     const centerToast = document.getElementById('centerToast');
     const centerToastMsg = document.getElementById('centerToastMsg');
     const centerToastSub = document.getElementById('centerToastSub');
+    const searchInput = document.getElementById('searchInput');
 
     // ============================================================
-    // MENU, COMPARTILHAMENTO, ETC. (mantido)
+    // MENU, COMPARTILHAMENTO, ETC.
     // ============================================================
     const menuToggle = document.getElementById('menuToggle');
     const menuDropdown = document.getElementById('menuDropdown');
@@ -1227,6 +1299,9 @@
 
     function renderProducts() {
       productsEl.innerHTML = '';
+      const termo = filtroTexto.trim().toLowerCase();
+      const termoNormalizado = normalizarTexto(termo);
+
       CATEGORIES.forEach(cat => {
         const section = document.createElement('section');
         section.className = 'cat-section';
@@ -1240,12 +1315,19 @@
         section.appendChild(catHeader);
 
         let list = PRODUCTS[cat.id] || [];
+
+        // FILTRO DE PESQUISA
+        if (termoNormalizado) {
+          list = list.filter(p => {
+            const tituloNorm = normalizarTexto(p.title);
+            const descNorm = normalizarTexto(p.desc || '');
+            return tituloNorm.includes(termoNormalizado) || descNorm.includes(termoNormalizado);
+          });
+        }
+
         if (list.length === 0) {
-          const empty = document.createElement('div');
-          empty.className = 'muted';
-          empty.textContent = 'Nenhum produto disponível';
-          section.appendChild(empty);
-          productsEl.appendChild(section);
+          // Se não houver produtos após filtro, não exibe a categoria (ou exibe vazio)
+          // Vamos pular a seção para não poluir
           return;
         }
 
@@ -1289,6 +1371,8 @@
       document.querySelectorAll('.add-btn').forEach(bindPressAnimation);
       setupScrollSpy();
       scrollParaProduto();
+      // Reaplicar bloqueio da loja (pois os botões foram recriados)
+      aplicarBloqueioLoja();
     }
 
     function compartilharProduto(id, categoria, title) {
@@ -1358,7 +1442,6 @@
       if (p.sizes && Object.keys(p.sizes).length > 0) {
         const minPrice = Math.min(...Object.values(p.sizes));
         price.textContent = `A partir de ${formatBRL(minPrice)}`;
-        // Adiciona unidade se existir
         if (p.unidade) price.textContent += ` / ${p.unidade}`;
       } else if (p.price) {
         price.textContent = formatBRL(p.price);
@@ -1372,8 +1455,14 @@
       addBtn.className = 'add-btn';
       addBtn.setAttribute('aria-label', `Adicionar ${getDisplayName(p.title)}`);
       addBtn.textContent = 'Adicionar';
+      addBtn.disabled = !lojaAberta;
+      if (!lojaAberta) addBtn.title = 'Loja fechada';
       addBtn.addEventListener('click', (e) => {
         e.stopPropagation();
+        if (!lojaAberta) {
+          showCenterNotification('Loja fechada', 'Não é possível fazer pedidos no momento');
+          return;
+        }
         if (p.sizes && Object.keys(p.sizes).length > 0) openSizeDialog(p);
         else addToCart(p.id, catId);
       });
@@ -1388,6 +1477,10 @@
 
       card.addEventListener('click', (e) => {
         if (e.target.closest('.add-btn') || e.target.closest('.share-btn')) return;
+        if (!lojaAberta) {
+          showCenterNotification('Loja fechada', 'Não é possível fazer pedidos no momento');
+          return;
+        }
         if (p.sizes && Object.keys(p.sizes).length > 0) openSizeDialog(p);
         else addToCart(p.id, catId);
       });
@@ -1478,7 +1571,7 @@
       img.src = (p.img && p.img.startsWith('http')) ? p.img : "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='600' height='400'><rect width='100%' height='100%' fill='%230a1420'/><text x='50%' y='50%' fill='%23a7b6c1' font-size='20' text-anchor='middle' dominant-baseline='middle'>Sem imagem</text></svg>";
       img.alt = p.title;
       img.style.width = '100%';
-      img.style.maxHeight = '200px';
+      img.style.maxHeight = '180px';
       img.style.objectFit = 'cover';
       img.style.borderRadius = '12px';
       imgWrapper.appendChild(img);
@@ -1488,10 +1581,10 @@
       logoDetalhe.alt = 'Logo Pasterry';
       logoDetalhe.className = 'logo-marca-detalhe';
       logoDetalhe.style.position = 'absolute';
-      logoDetalhe.style.bottom = '12px';
-      logoDetalhe.style.left = '12px';
-      logoDetalhe.style.width = '48px';
-      logoDetalhe.style.height = '48px';
+      logoDetalhe.style.bottom = '10px';
+      logoDetalhe.style.left = '10px';
+      logoDetalhe.style.width = '40px';
+      logoDetalhe.style.height = '40px';
       logoDetalhe.style.borderRadius = '50%';
       logoDetalhe.style.border = '2px solid rgba(255,255,255,0.3)';
       logoDetalhe.style.boxShadow = '0 2px 8px rgba(0,0,0,0.5)';
@@ -1515,7 +1608,6 @@
       msg.textContent = 'Toque em uma opção para adicionar ao pedido.';
       sizeImageWrap.appendChild(msg);
 
-      // Usar a unidade do produto, com fallback
       const unit = getUnidade(p);
       const entries = Object.entries(p.sizes || {}).sort((a, b) => Number(a[0]) - Number(b[0]));
       entries.forEach(([size, price]) => {
@@ -1527,6 +1619,10 @@
         btn.style.alignItems = 'center';
         btn.innerHTML = `<span>${size} ${unit}</span><strong>${formatBRL(price)}</strong>`;
         btn.addEventListener('click', () => {
+          if (!lojaAberta) {
+            showCenterNotification('Loja fechada', 'Não é possível fazer pedidos no momento');
+            return;
+          }
           addToCartWithSize(p, size);
           closeSizeDialog();
         });
@@ -1555,6 +1651,14 @@
       el.addEventListener('mousedown', add);
       el.addEventListener('touchstart', add, { passive: true });
     }
+
+    // ============================================================
+    // PESQUISA
+    // ============================================================
+    searchInput.addEventListener('input', (e) => {
+      filtroTexto = e.target.value;
+      renderProducts();
+    });
 
     // ============================================================
     // SUCESSO OVERLAY
@@ -1651,13 +1755,6 @@
     }
 
     // ============================================================
-    // NORMALIZAÇÃO DE TEXTO (para busca)
-    // ============================================================
-    function normalizarTexto(str) {
-      return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
-    }
-
-    // ============================================================
     // INICIALIZAÇÃO
     // ============================================================
     function renderizarTudo() {
@@ -1688,12 +1785,14 @@
 
     function iniciarApp() {
       carregarHorarios();
+      carregarStatusLoja();
       carregarCardapio();
       setInterval(atualizarStatusHorario, 60000);
     }
 
     iniciarApp();
 
+    // Exportar funções
     window.addToCart = addToCart;
     window.openQtyDialog = openQtyDialog;
     window.openSizeDialog = openSizeDialog;
