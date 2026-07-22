@@ -60,7 +60,7 @@
     }
     .logo img { width: 100%; height: 100%; object-fit: cover; display: block; }
 
-    /* STATUS E HORÁRIO */
+    /* STATUS E HORÁRIO - VERSÃO SIMPLIFICADA */
     .status-horario {
       flex: 1;
       min-width: 0;
@@ -324,7 +324,6 @@
       object-fit: cover;
       display: block;
     }
-    .product .media::after { display: none; }
     .product .media .logo-marca {
       position: absolute;
       bottom: 6px;
@@ -913,17 +912,15 @@
     const db = firebase.firestore();
 
     // ============================================================
-    // FUNÇÕES DE HORÁRIO
+    // FUNÇÕES DE HORÁRIO - SIMPLIFICADO
     // ============================================================
     const DIAS_SEMANA = ['domingo', 'segunda', 'terca', 'quarta', 'quinta', 'sexta', 'sabado'];
     let horariosCache = {};
-    let statusAtual = { aberto: false, texto: 'Fechado', horario: '' };
 
     function atualizarStatusHorario() {
       const statusEl = document.getElementById('statusAberto');
       const horarioEl = document.getElementById('horarioTexto');
 
-      // Verifica se temos dados de horário
       if (!horariosCache || Object.keys(horariosCache).length === 0) {
         statusEl.textContent = '⚠️ Sem horário';
         statusEl.className = 'status fechado';
@@ -931,82 +928,52 @@
         return;
       }
 
-      // Dia atual (0 = domingo)
       const diaAtual = new Date().getDay();
       const diaNome = DIAS_SEMANA[diaAtual];
       const periodos = horariosCache[diaNome] || [];
 
-      // Se não houver período para hoje, está fechado
       if (periodos.length === 0) {
         statusEl.textContent = '🔴 Fechado';
         statusEl.className = 'status fechado';
-        horarioEl.textContent = 'Hoje: Fechado';
+        horarioEl.textContent = 'Fechado';
         return;
       }
 
-      // Hora atual (HH:MM)
       const agora = new Date();
       const horaAtual = String(agora.getHours()).padStart(2, '0') + ':' + String(agora.getMinutes()).padStart(2, '0');
 
-      // Verifica se está dentro de algum período
       let aberto = false;
-      let periodoAtual = null;
       for (const p of periodos) {
         if (horaAtual >= p.inicio && horaAtual < p.fim) {
           aberto = true;
-          periodoAtual = p;
           break;
         }
       }
 
-      // Formata o horário para exibição
-      const formatPeriodo = (p) => `${p.inicio} - ${p.fim}`;
-      let horarioTexto = '';
-      if (periodos.length === 1) {
-        horarioTexto = `Hoje: ${formatPeriodo(periodos[0])}`;
-      } else {
-        horarioTexto = `Hoje: ${periodos.map(p => formatPeriodo(p)).join(' | ')}`;
-      }
+      // Monta string de horários apenas com os períodos (ex: "08:00 - 12:00 | 14:00 - 18:00")
+      const horariosStr = periodos.map(p => `${p.inicio} - ${p.fim}`).join(' | ');
 
       if (aberto) {
         statusEl.textContent = '🟢 Aberto';
         statusEl.className = 'status aberto';
-        // Mostra até que horas está aberto
-        if (periodoAtual) {
-          horarioTexto += ` (até ${periodoAtual.fim})`;
-        }
       } else {
         statusEl.textContent = '🔴 Fechado';
         statusEl.className = 'status fechado';
-        // Mostra o próximo horário (se houver)
-        const agoraNum = parseInt(horaAtual.replace(':', ''));
-        let proximo = null;
-        for (const p of periodos) {
-          const inicioNum = parseInt(p.inicio.replace(':', ''));
-          if (inicioNum > agoraNum) {
-            proximo = p;
-            break;
-          }
-        }
-        if (proximo) {
-          horarioTexto += ` (abre às ${proximo.inicio})`;
-        }
+        // Opcional: mostra o próximo horário, mas vou deixar só o período
       }
-      horarioEl.textContent = horarioTexto;
+      horarioEl.textContent = horariosStr;
     }
 
     function carregarHorarios() {
       db.collection('config').doc('horarios').get().then(doc => {
         if (doc.exists) {
           horariosCache = doc.data() || {};
-          // Garantir que todas as chaves existam (se não, array vazio)
           DIAS_SEMANA.forEach(dia => {
             if (!horariosCache[dia]) horariosCache[dia] = [];
           });
           atualizarStatusHorario();
         }
       }).catch(() => {
-        // Fallback: mostrar mensagem
         document.getElementById('statusAberto').textContent = '⚠️ Erro';
         document.getElementById('horarioTexto').textContent = 'Não foi possível carregar horários';
       });
@@ -1019,7 +986,6 @@
     let PRODUCTS = {};
 
     function carregarCardapio() {
-      // Buscar categorias ATIVAS
       db.collection('categorias')
         .where('ativo', '==', true)
         .onSnapshot((snapshot) => {
@@ -1032,7 +998,6 @@
               ordem: data.ordem || 999
             });
           });
-          // Ordena por ordem
           CATEGORIES.sort((a, b) => (a.ordem || 999) - (b.ordem || 999));
           if (CATEGORIES.length === 0) {
             CATEGORIES = [{ id: 'geral', name: 'Geral', ordem: 0 }];
@@ -1044,7 +1009,6 @@
           console.error('Erro ao carregar categorias:', error);
         });
 
-      // Buscar produtos ATIVOS
       db.collection('produtos')
         .where('ativo', '==', true)
         .onSnapshot((snapshot) => {
@@ -1420,14 +1384,16 @@
       img.src = (p.img && p.img.startsWith('http')) ? p.img : "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='600' height='400'><rect width='100%' height='100%' fill='%230a1420'/><text x='50%' y='50%' fill='%23a7b6c1' font-size='20' text-anchor='middle' dominant-baseline='middle'>Sem imagem</text></svg>";
       media.appendChild(img);
 
+      // Logo de marca no card do produto
       const logoMarca = document.createElement('img');
-      logoMarca.src = 'img/logo.jpg';
+      logoMarca.src = 'img/logo.jpg'; // Será sobrescrito pelo Firebase
       logoMarca.alt = 'Logo Pasterry';
       logoMarca.className = 'logo-marca';
       logoMarca.loading = 'lazy';
       logoMarca.style.display = 'none';
       media.appendChild(logoMarca);
 
+      // Quando a imagem carregar, mostra a logo
       img.addEventListener('load', () => {
         logoMarca.style.display = 'block';
       });
@@ -1577,8 +1543,9 @@
       img.style.borderRadius = '12px';
       imgWrapper.appendChild(img);
 
+      // Logo de marca no modal de detalhes
       const logoDetalhe = document.createElement('img');
-      logoDetalhe.src = 'img/logo.jpg';
+      logoDetalhe.src = 'img/logo.jpg'; // Será sobrescrito pelo Firebase
       logoDetalhe.alt = 'Logo Pasterry';
       logoDetalhe.className = 'logo-marca-detalhe';
       logoDetalhe.style.position = 'absolute';
@@ -1764,7 +1731,7 @@
       updateCheckoutText();
       iniciarCarrossel();
 
-      // Carregar logo do cabeçalho
+      // Carregar logo do cabeçalho e logo de marca
       db.collection('config').doc('loja').get().then(doc => {
         if (doc.exists) {
           const data = doc.data();
@@ -1772,7 +1739,7 @@
           if (data.logoUrl) {
             document.getElementById('logoImg').src = data.logoUrl;
           }
-          // Logo de marca (sobreposição)
+          // Logo de marca (sobreposição) – atualiza todos os elementos com essas classes
           const logoMarcaUrl = data.logoMarca || '';
           document.querySelectorAll('.logo-marca, .logo-marca-detalhe').forEach(el => {
             if (logoMarcaUrl) {
