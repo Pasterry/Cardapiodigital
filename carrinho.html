@@ -28,6 +28,12 @@ h3{margin:0 0 12px;font-size:22px;color:#07fcdb}
 .btn-large{padding:12px 16px;font-size:16px;flex:1}
 .geo-btn{width:100%;padding:12px;background:linear-gradient(135deg,#28a745,#07fcdb);color:#000;border:none;border-radius:10px;font-weight:bold;margin:8px 0}
 .geo-status{text-align:center;font-size:12px;min-height:16px;color:#07fcdb}
+.erro-geral{background:rgba(255,92,92,0.15);color:#ffb4b4;padding:10px;border-radius:10px;margin-top:10px;display:none;border:1px solid rgba(255,92,92,0.3)}
+.erro-geral.visible{display:block}
+.loading-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.5);display:none;align-items:center;justify-content:center;z-index:120;backdrop-filter:blur(4px)}
+.loading-overlay.active{display:flex}
+.spinner{width:40px;height:40px;border-radius:50%;border:4px solid rgba(255,255,255,0.1);border-top-color:#FFD700;animation:spin 0.8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
 </style>
 </head>
 <body>
@@ -35,104 +41,450 @@ h3{margin:0 0 12px;font-size:22px;color:#07fcdb}
 <h3>Itens do Pedido</h3><div id="cart"></div>
 <button class="btn danger" onclick="limparSacola()">Esvaziar sacola</button>
 <div class="footer-actions"><div id="totais"></div><div class="footer-buttons"><button class="btn danger btn-large" onclick="location.href='index.html'">Voltar</button><button id="btnConfirmar" class="btn primary btn-large" onclick="abrirModal()">Confirmar</button></div></div>
-<div id="modalEndereco"><div class="modal-content"><button class="btn secondary" style="float:right" onclick="fecharModal()">X</button><h3>Seus dados</h3><button id="btnGeo" class="geo-btn" onclick="usarLocalizacao()">Usar minha localização</button><div id="geoStatus" class="geo-status"></div><input id="nome" placeholder="Nome completo*"><input id="telefone" placeholder="WhatsApp com DDD*"><select id="cidade"><option value="">Selecione sua cidade*</option></select><input id="rua" placeholder="Digite sua rua*"><input id="numero" placeholder="Número*"><input id="bairro" placeholder="Bairro*"><select id="pagamento"><option value="">Forma de pagamento*</option><option>Debito</option><option>Credito</option><option>Dinheiro</option></select><input id="troco" placeholder="Troco para quanto? (opcional)" style="display:none"><div class="cupom"><h4>Resumo</h4><div id="cupomItens"></div><div id="cupomTotal"></div></div><button class="btn primary" style="width:100%" onclick="enviarPedido()">Confirmar e Enviar</button></div></div>
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getFirestore, doc, setDoc, serverTimestamp, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-const firebaseConfig = { apiKey: "AIzaSyDV9tPC5XNNmB_REgW1au2NtpP1ETtV1i0", authDomain: "paineldepedidos-8cfff.firebaseapp.com", projectId: "paineldepedidos-8cfff" };
-const app = initializeApp(firebaseConfig); const db = getFirestore(app);
+
+<div id="modalEndereco"><div class="modal-content"><button class="btn secondary" style="float:right" onclick="fecharModal()">X</button><h3>Seus dados</h3><button id="btnGeo" class="geo-btn" onclick="usarLocalizacao()">Usar minha localização</button><div id="geoStatus" class="geo-status"></div><input id="nome" placeholder="Nome completo*"><input id="telefone" placeholder="WhatsApp com DDD*"><select id="cidade"><option value="">Selecione sua cidade*</option></select><input id="rua" placeholder="Digite sua rua*"><input id="numero" placeholder="Número*"><input id="bairro" placeholder="Bairro*"><select id="pagamento"><option value="">Forma de pagamento*</option><option>Debito</option><option>Credito</option><option>Dinheiro</option></select><input id="troco" placeholder="Troco para quanto? (opcional)" style="display:none"><div class="cupom"><h4>Resumo</h4><div id="cupomItens"></div><div id="cupomTotal"></div></div><div id="erroEnvio" class="erro-geral"></div><button class="btn primary" style="width:100%" onclick="enviarPedido()">Confirmar e Enviar</button></div></div>
+
+<div class="loading-overlay" id="loadingOverlay"><div class="spinner"></div></div>
+
+<!-- FIREBASE VIA CDN (compatível com navegadores) -->
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+
+<script>
+// ============================================================
+// CONFIGURAÇÃO FIREBASE
+// ============================================================
+const firebaseConfig = {
+  apiKey: "AIzaSyDV9tPC5XNNmB_REgW1au2NtpP1ETtV1i0",
+  authDomain: "paineldepedidos-8cfff.firebaseapp.com",
+  projectId: "paineldepedidos-8cfff",
+  storageBucket: "paineldepedidos-8cfff.firebasestorage.app",
+  messagingSenderId: "390619980929",
+  appId: "1:390619980929:web:5bb015938e9dcb89389980",
+  measurementId: "G-CMH7LSQ7C0"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+
+// ============================================================
+// VARIÁVEIS GLOBAIS
+// ============================================================
+const CART_KEY = 'pasterry_cart_v1';
+const SAUCES = {
+  'Molho Barbecue': {img: 'img/barbecue.jpg', price: 5},
+  'Molho Mostarda': {img: 'img/mostarda.jpg', price: 5},
+  'Molho Cheddar': {img: 'img/cheddar.jpg', price: 5},
+  'Molho Tartaro': {img: 'img/tartaro.jpg', price: 5},
+  'Ketchup': {img: 'img/ketchup.jpg', price: 5}
+};
+
 let GOOGLE_KEY = localStorage.getItem('gmaps_key') || "AIzaSyDV9tPC5XNNmB_REgW1au2NtpP1ETtV1i0";
 let taxaAtual = null, distanciaAtual = null, configEntrega = null;
-const CART_KEY='pasterry_cart_v1';
-const SAUCES={'Molho Barbecue':{img:'img/barbecue.jpg',price:5},'Molho Mostarda':{img:'img/mostarda.jpg',price:5},'Molho Cheddar':{img:'img/cheddar.jpg',price:5},'Molho Tartaro':{img:'img/tartaro.jpg',price:5},'Ketchup':{img:'img/ketchup.jpg',price:5}};
-const getCart=()=>JSON.parse(localStorage.getItem(CART_KEY)||'[]');
-const setCart=c=>localStorage.setItem(CART_KEY,JSON.stringify(c));
-const money=v=>'R$ '+Number(v||0).toFixed(2).replace('.',',');
-const distanciaKm=(a,b,c,d)=>{const R=6371,e=(c-a)*Math.PI/180,f=(d-b)*Math.PI/180;return R*2*Math.asin(Math.sqrt(Math.sin(e/2)**2+Math.cos(a*Math.PI/180)*Math.cos(c*Math.PI/180)*Math.sin(f/2)**2))};
-function calcularTaxa(km){ if(!configEntrega?.faixas) return 5; const f=configEntrega.faixas.sort((a,b)=>a.ate-b.ate).find(x=>km<=x.ate); return f?Number(f.taxa):Number(configEntrega.faixas[configEntrega.faixas.length-1].taxa); }
+let carregandoCidades = false;
 
-async function carregar(){
-  const snap=await getDoc(doc(db,"config","entrega"));
-  configEntrega=snap.exists()?snap.data():{loja:{lat:-23.27824,lon:-46.73661},faixas:[{ate:3,taxa:5},{ate:5,taxa:7},{ate:8,taxa:10}],cidades:['Franco da Rocha','Francisco Morato','Caieiras']};
-  if(configEntrega.googleMapsApiKey) GOOGLE_KEY=configEntrega.googleMapsApiKey;
-  cidade.innerHTML='<option value="">Selecione sua cidade*</option>'+configEntrega.cidades.map(c=>`<option>${c}</option>`).join('');
-  renderTotais();
+const getCart = () => JSON.parse(localStorage.getItem(CART_KEY) || '[]');
+const setCart = (c) => localStorage.setItem(CART_KEY, JSON.stringify(c));
+const money = (v) => 'R$ ' + Number(v || 0).toFixed(2).replace('.', ',');
+const distanciaKm = (a, b, c, d) => {
+  const R = 6371;
+  const e = (c - a) * Math.PI / 180;
+  const f = (d - b) * Math.PI / 180;
+  return R * 2 * Math.asin(Math.sqrt(Math.sin(e/2)**2 + Math.cos(a * Math.PI / 180) * Math.cos(c * Math.PI / 180) * Math.sin(f/2)**2));
+};
+
+function calcularTaxa(km) {
+  if (!configEntrega?.faixas) return 5;
+  const f = configEntrega.faixas.sort((a, b) => a.ate - b.ate).find(x => km <= x.ate);
+  return f ? Number(f.taxa) : Number(configEntrega.faixas[configEntrega.faixas.length - 1].taxa);
 }
 
-function debounce(fn,d){let t;return(...a)=>{clearTimeout(t);t=setTimeout(()=>fn(...a),d)}}
+// ============================================================
+// CARREGAR CONFIGURAÇÕES
+// ============================================================
+async function carregar() {
+  try {
+    const snap = await db.collection('config').doc('entrega').get();
+    if (snap.exists) {
+      configEntrega = snap.data();
+    } else {
+      configEntrega = {
+        loja: {lat: -23.27824, lon: -46.73661},
+        faixas: [{ate: 3, taxa: 5}, {ate: 5, taxa: 7}, {ate: 8, taxa: 10}],
+        cidades: ['Franco da Rocha', 'Francisco Morato', 'Caieiras']
+      };
+    }
+    if (configEntrega.googleMapsApiKey) GOOGLE_KEY = configEntrega.googleMapsApiKey;
+    const select = document.getElementById('cidade');
+    select.innerHTML = '<option value="">Selecione sua cidade*</option>';
+    (configEntrega.cidades || []).forEach(c => {
+      const opt = document.createElement('option');
+      opt.value = c;
+      opt.textContent = c;
+      select.appendChild(opt);
+    });
+    renderTotais();
+  } catch (err) {
+    console.error('Erro ao carregar configurações:', err);
+    // Fallback
+    configEntrega = {
+      loja: {lat: -23.27824, lon: -46.73661},
+      faixas: [{ate: 3, taxa: 5}, {ate: 5, taxa: 7}, {ate: 8, taxa: 10}],
+      cidades: ['Franco da Rocha', 'Francisco Morato', 'Caieiras']
+    };
+    const select = document.getElementById('cidade');
+    select.innerHTML = '<option value="">Selecione sua cidade*</option>';
+    configEntrega.cidades.forEach(c => {
+      const opt = document.createElement('option');
+      opt.value = c;
+      opt.textContent = c;
+      select.appendChild(opt);
+    });
+  }
+}
 
-async function calcularTaxaEndereco(){
-  if(rua.value.length<3||!numero.value||!cidade.value) return;
-  try{
+// ============================================================
+// DEBOUNCE
+// ============================================================
+function debounce(fn, d) {
+  let t;
+  return (...a) => {
+    clearTimeout(t);
+    t = setTimeout(() => fn(...a), d);
+  };
+}
+
+// ============================================================
+// CALCULAR TAXA
+// ============================================================
+async function calcularTaxaEndereco() {
+  const rua = document.getElementById('rua');
+  const numero = document.getElementById('numero');
+  const cidade = document.getElementById('cidade');
+  if (rua.value.length < 3 || !numero.value || !cidade.value) return;
+  try {
     const end = `${rua.value}, ${numero.value}, ${cidade.value}, SP`;
     const r = await fetch(`https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(end)}&key=${GOOGLE_KEY}`);
     const d = await r.json();
-    if(d.results[0] && configEntrega?.loja){
+    if (d.results[0] && configEntrega?.loja) {
       const loc = d.results[0].geometry.location;
       distanciaAtual = distanciaKm(configEntrega.loja.lat, configEntrega.loja.lon, loc.lat, loc.lng);
       taxaAtual = calcularTaxa(distanciaAtual);
-      renderTotais(); renderCupom();
+      renderTotais();
+      renderCupom();
     }
-  }catch(e){}
+  } catch (e) {
+    console.error('Erro ao calcular taxa:', e);
+  }
 }
-const calcDebounced=debounce(calcularTaxaEndereco,800);
+const calcDebounced = debounce(calcularTaxaEndereco, 800);
 
-function renderMolhos(){molhos.innerHTML=Object.entries(SAUCES).map(([n,s])=>`<div class="molho-card"><img src="${s.img}"><div>${n}</div><div>${money(s.price)}</div><button class="btn primary" onclick="addMolho('${n}')">+</button></div>`).join('')}
-function renderCart(){ const c=getCart(); cart.innerHTML=c.length?c.map((it,i)=>`<div class="cart-item"><img src="${it.img}"><div style="flex:1">${it.title}</div><div style="display:flex;align-items:center;gap:6px"><button class="btn secondary" style="padding:4px 8px" onclick="alterarQtd(${i},-1)">-</button><span>${it.qty}x</span><button class="btn primary" style="padding:4px 8px" onclick="alterarQtd(${i},1)">+</button></div></div>`).join(''):'<div style="opacity:.6;text-align:center;padding:20px">Sacola vazia<br>Adicione um pastel ou molho</div>'; renderTotais(); const btn=document.getElementById('btnConfirmar'); if(btn) btn.disabled=c.length===0; }
-function renderTotais(){const c=getCart();const sub=c.reduce((s,i)=>s+i.price*i.qty,0);totais.innerHTML=`Subtotal: ${money(sub)}<br>Entrega: ${taxaAtual!==null?money(taxaAtual):'—'}${distanciaAtual?` <span style="opacity:.6">(${distanciaAtual.toFixed(1)} km)</span>`:''}<br><b>Total: ${money(sub+(taxaAtual||0))}</b>`}
-function renderCupom(){const c=getCart();cupomItens.innerHTML=c.map(i=>`${i.qty}x ${i.title}`).join('<br>');const sub=c.reduce((s,i)=>s+i.price*i.qty,0);cupomTotal.innerHTML=`Subtotal: ${money(sub)}<br>Entrega: <b style="color:#07fcdb">${taxaAtual!==null?money(taxaAtual):'—'}</b><br><b>Total: ${money(sub+(taxaAtual||0))}</b>`}
+// ============================================================
+// RENDERIZAÇÃO
+// ============================================================
+function renderMolhos() {
+  const container = document.getElementById('molhos');
+  container.innerHTML = Object.entries(SAUCES).map(([nome, s]) => `
+    <div class="molho-card">
+      <img src="${s.img}" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22120%22 height=%2248%22%3E%3Crect width=%22120%22 height=%2248%22 fill=%22%230a1420%22/%3E%3Ctext x=%2260%22 y=%2230%22 text-anchor=%22middle%22 fill=%22%239aa6b2%22 font-size=%2214%22%3E🥫%3C/text%3E%3C/svg%3E'">
+      <div>${nome}</div>
+      <div>${money(s.price)}</div>
+      <button class="btn primary" onclick="addMolho('${nome}')">+</button>
+    </div>
+  `).join('');
+}
 
-window.addMolho=n=>{const c=getCart();const e=c.find(x=>x.id===n);if(e)e.qty++;else c.push({id:n,title:n,price:SAUCES[n].price,qty:1,img:SAUCES[n].img});setCart(c);renderCart()}
-window.alterarQtd=(i,d)=>{const c=getCart();c[i].qty+=d;if(c[i].qty<=0)c.splice(i,1);setCart(c);renderCart();renderCupom();}
-window.limparSacola=()=>{localStorage.removeItem(CART_KEY);renderCart()}
-window.abrirModal=()=>{ const c=getCart(); if(!c.length){ alert('Adicione pelo menos 1 item na sacola'); return; } modalEndereco.style.display='flex';renderCupom()}
-window.fecharModal=()=>modalEndereco.style.display='none'
+function renderCart() {
+  const c = getCart();
+  const container = document.getElementById('cart');
+  if (c.length === 0) {
+    container.innerHTML = '<div style="opacity:.6;text-align:center;padding:20px">Sacola vazia<br>Adicione um pastel ou molho</div>';
+  } else {
+    container.innerHTML = c.map((it, i) => `
+      <div class="cart-item">
+        <img src="${it.img}" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2250%22 height=%2250%22%3E%3Crect width=%2250%22 height=%2250%22 fill=%22%230a1420%22/%3E%3Ctext x=%2225%22 y=%2232%22 text-anchor=%22middle%22 fill=%22%239aa6b2%22 font-size=%2214%22%3E🍕%3C/text%3E%3C/svg%3E'">
+        <div style="flex:1">${it.title}</div>
+        <div style="display:flex;align-items:center;gap:6px">
+          <button class="btn secondary" style="padding:4px 8px" onclick="alterarQtd(${i},-1)">-</button>
+          <span>${it.qty}x</span>
+          <button class="btn primary" style="padding:4px 8px" onclick="alterarQtd(${i},1)">+</button>
+        </div>
+      </div>
+    `).join('');
+  }
+  renderTotais();
+  const btn = document.getElementById('btnConfirmar');
+  if (btn) btn.disabled = c.length === 0;
+}
 
-window.usarLocalizacao=()=>{
+function renderTotais() {
+  const c = getCart();
+  const sub = c.reduce((s, i) => s + (i.price || 0) * (i.qty || 1), 0);
+  const container = document.getElementById('totais');
+  container.innerHTML = `
+    Subtotal: ${money(sub)}<br>
+    Entrega: ${taxaAtual !== null ? money(taxaAtual) : '—'}${distanciaAtual ? ` <span style="opacity:.6">(${distanciaAtual.toFixed(1)} km)</span>` : ''}
+    <br><b>Total: ${money(sub + (taxaAtual || 0))}</b>
+  `;
+}
+
+function renderCupom() {
+  const c = getCart();
+  const containerItens = document.getElementById('cupomItens');
+  const containerTotal = document.getElementById('cupomTotal');
+  const sub = c.reduce((s, i) => s + (i.price || 0) * (i.qty || 1), 0);
+  containerItens.innerHTML = c.map(i => `${i.qty}x ${i.title}`).join('<br>') || 'Nenhum item';
+  containerTotal.innerHTML = `
+    Subtotal: ${money(sub)}<br>
+    Entrega: <b style="color:#07fcdb">${taxaAtual !== null ? money(taxaAtual) : '—'}</b>
+    <br><b>Total: ${money(sub + (taxaAtual || 0))}</b>
+  `;
+}
+
+// ============================================================
+// FUNÇÕES GLOBAIS (acessíveis via onclick)
+// ============================================================
+window.addMolho = (nome) => {
+  const c = getCart();
+  const existente = c.find(x => x.id === nome);
+  if (existente) {
+    existente.qty++;
+  } else {
+    c.push({
+      id: nome,
+      title: nome,
+      price: SAUCES[nome].price,
+      qty: 1,
+      img: SAUCES[nome].img
+    });
+  }
+  setCart(c);
+  renderCart();
+};
+
+window.alterarQtd = (i, delta) => {
+  const c = getCart();
+  c[i].qty += delta;
+  if (c[i].qty <= 0) c.splice(i, 1);
+  setCart(c);
+  renderCart();
+  renderCupom();
+};
+
+window.limparSacola = () => {
+  localStorage.removeItem(CART_KEY);
+  renderCart();
+};
+
+window.abrirModal = () => {
+  const c = getCart();
+  if (!c.length) {
+    alert('Adicione pelo menos 1 item na sacola');
+    return;
+  }
+  document.getElementById('modalEndereco').style.display = 'flex';
+  renderCupom();
+  // Ocultar erro anterior
+  document.getElementById('erroEnvio').classList.remove('visible');
+};
+
+window.fecharModal = () => {
+  document.getElementById('modalEndereco').style.display = 'none';
+};
+
+window.usarLocalizacao = () => {
   const btn = document.getElementById('btnGeo');
-  if(!navigator.geolocation){ geoStatus.textContent='Seu navegador não suporta GPS'; return; }
-  btn.disabled = true; geoStatus.textContent = 'Buscando sua localização...';
-  navigator.geolocation.getCurrentPosition(async (pos)=>{
-    try{
+  const status = document.getElementById('geoStatus');
+  if (!navigator.geolocation) {
+    status.textContent = 'Seu navegador não suporta GPS';
+    return;
+  }
+  btn.disabled = true;
+  status.textContent = 'Buscando sua localização...';
+  navigator.geolocation.getCurrentPosition(async (pos) => {
+    try {
       const lat = pos.coords.latitude, lon = pos.coords.longitude;
-      if(configEntrega?.loja){
+      if (configEntrega?.loja) {
         distanciaAtual = distanciaKm(configEntrega.loja.lat, configEntrega.loja.lon, lat, lon);
         taxaAtual = calcularTaxa(distanciaAtual);
       }
       const resp = await fetch(`https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lon}&key=${GOOGLE_KEY}&language=pt-BR`);
       const data = await resp.json();
-      if(data.results[0]){
+      if (data.results[0]) {
         const comp = data.results[0].address_components;
-        const get = t => comp.find(c=>c.types.includes(t))?.long_name || '';
-        rua.value = get('route');
-        numero.value = get('street_number');
-        bairro.value = get('sublocality') || get('sublocality_level_1') || get('neighborhood');
+        const get = (t) => comp.find(c => c.types.includes(t))?.long_name || '';
+        document.getElementById('rua').value = get('route');
+        document.getElementById('numero').value = get('street_number');
+        document.getElementById('bairro').value = get('sublocality') || get('sublocality_level_1') || get('neighborhood');
         const cid = get('administrative_area_level_2') || get('locality');
-        if(cid &&![...cidade.options].some(o=>o.value===cid)){ cidade.innerHTML += `<option>${cid}</option>`; }
-        if(cid) cidade.value = cid;
+        const select = document.getElementById('cidade');
+        if (cid && ![...select.options].some(o => o.value === cid)) {
+          const opt = document.createElement('option');
+          opt.value = cid;
+          opt.textContent = cid;
+          select.appendChild(opt);
+        }
+        if (cid) select.value = cid;
       }
-      renderTotais(); renderCupom();
-      geoStatus.textContent = `✓ Localização encontrada - ${distanciaAtual.toFixed(1)} km`;
-    }catch(e){ geoStatus.textContent = 'Erro ao buscar endereço'; }
+      renderTotais();
+      renderCupom();
+      status.textContent = `✓ Localização encontrada - ${distanciaAtual.toFixed(1)} km`;
+    } catch (e) {
+      status.textContent = 'Erro ao buscar endereço';
+    }
     btn.disabled = false;
-  }, (err)=>{
-    geoStatus.textContent = 'Permita o acesso à localização';
+  }, (err) => {
+    status.textContent = 'Permita o acesso à localização';
     btn.disabled = false;
-  }, {enableHighAccuracy:true, timeout:12000});
-}
+  }, {enableHighAccuracy: true, timeout: 12000});
+};
 
-window.enviarPedido=async()=>{
-  const c=getCart(); if(!c.length) return alert('Sacola vazia'); if(!nome.value.trim()) return alert('Nome'); const telDigits = telefone.value.replace(/\D/g,''); if(telDigits.length<10) return alert('WhatsApp com DDD'); if(!cidade.value||!rua.value||!numero.value||!bairro.value||!pagamento.value) return alert('Preencha todos os campos'); if(taxaAtual===null) taxaAtual=5;
-  const subtotal = c.reduce((s,i)=> s + (Number(i.price)||0)*(Number(i.qty)||1), 0);
-  const itensFormatados = c.map(i => ({ id: i.id, nome: i.title, title: i.title, preco: Number(i.price), price: Number(i.price), valor: Number(i.price), quantidade: Number(i.qty), qty: Number(i.qty), total: Number(i.price) * Number(i.qty), img: i.img }));
-  const pedido={ id:'A'+Date.now(), origem: 'cardapio', cliente:{ nome:nome.value.trim(), telefone: telDigits, cidade:cidade.value, rua:rua.value.trim(), numero:numero.value.trim(), bairro:bairro.value.trim(), pagamento: pagamento.value, troco: troco.value.trim(), lat: null, lng: null }, itens: itensFormatados, subtotal: subtotal, taxa: taxaAtual, taxaEntrega: taxaAtual, distanciaKm: distanciaAtual?Number(distanciaAtual.toFixed(2)):null, total: subtotal + taxaAtual, pagamento: pagamento.value, troco: troco.value? Number(troco.value.replace(/\D/g,'')) : null, status:'novo', criadoEm:serverTimestamp() };
-  await setDoc(doc(db,"pedidos",pedido.id),pedido);
-  localStorage.setItem('pasterry_cliente_v1', JSON.stringify(pedido.cliente));
-  const hist = JSON.parse(localStorage.getItem('pedidos_pasterry_v1')||'[]'); hist.push({...pedido, criadoEm:new Date().toISOString()}); localStorage.setItem('pedidos_pasterry_v1', JSON.stringify(hist));
-  alert(`Pedido #${pedido.id} confirmado!`); localStorage.removeItem(CART_KEY); location.href = 'status.html?id='+pedido.id;
-}
-carregar();renderMolhos();renderCart(); rua.addEventListener('input',calcDebounced); numero.addEventListener('input',calcDebounced); cidade.addEventListener('change',calcDebounced); pagamento.addEventListener('change',()=>{ troco.style.display = pagamento.value==='Dinheiro'? 'block':'none'; });
-const telEl=document.getElementById('telefone'); if(!telEl.value) telEl.value='(11) '; telEl.addEventListener('input',()=>{ let v=telEl.value.replace(/\D/g,'').slice(0,11); telEl.value = v.length<=2? (v?'('+v:'') : v.length<=7? `(${v.slice(0,2)}) ${v.slice(2)}` : `(${v.slice(0,2)}) ${v.slice(2,7)}-${v.slice(7)}`; });
+// ============================================================
+// ENVIAR PEDIDO
+// ============================================================
+window.enviarPedido = async () => {
+  const c = getCart();
+  const erroEl = document.getElementById('erroEnvio');
+  erroEl.classList.remove('visible');
+  erroEl.textContent = '';
+
+  // Validações
+  if (!c.length) {
+    alert('Sacola vazia');
+    return;
+  }
+  const nome = document.getElementById('nome');
+  const telefone = document.getElementById('telefone');
+  const cidade = document.getElementById('cidade');
+  const rua = document.getElementById('rua');
+  const numero = document.getElementById('numero');
+  const bairro = document.getElementById('bairro');
+  const pagamento = document.getElementById('pagamento');
+  const troco = document.getElementById('troco');
+
+  if (!nome.value.trim()) {
+    alert('Digite seu nome completo');
+    return;
+  }
+  const telDigits = telefone.value.replace(/\D/g, '');
+  if (telDigits.length < 10) {
+    alert('WhatsApp com DDD (ex: 11999999999)');
+    return;
+  }
+  if (!cidade.value || !rua.value.trim() || !numero.value.trim() || !bairro.value.trim() || !pagamento.value) {
+    alert('Preencha todos os campos obrigatórios (*)');
+    return;
+  }
+  if (taxaAtual === null) taxaAtual = 5;
+
+  // Desabilitar botão e mostrar loading
+  const btn = document.querySelector('#modalEndereco .btn.primary');
+  btn.disabled = true;
+  btn.textContent = 'Enviando...';
+  document.getElementById('loadingOverlay').classList.add('active');
+
+  try {
+    const subtotal = c.reduce((s, i) => s + (Number(i.price) || 0) * (Number(i.qty) || 1), 0);
+    const itensFormatados = c.map(i => ({
+      id: i.id,
+      nome: i.title,
+      title: i.title,
+      preco: Number(i.price),
+      price: Number(i.price),
+      valor: Number(i.price),
+      quantidade: Number(i.qty),
+      qty: Number(i.qty),
+      total: Number(i.price) * Number(i.qty),
+      img: i.img || ''
+    }));
+
+    const pedido = {
+      id: 'A' + Date.now(),
+      origem: 'cardapio',
+      cliente: {
+        nome: nome.value.trim(),
+        telefone: telDigits,
+        cidade: cidade.value,
+        rua: rua.value.trim(),
+        numero: numero.value.trim(),
+        bairro: bairro.value.trim(),
+        pagamento: pagamento.value,
+        troco: troco.value.trim() || null,
+        lat: null,
+        lng: null
+      },
+      itens: itensFormatados,
+      subtotal: subtotal,
+      taxa: taxaAtual,
+      taxaEntrega: taxaAtual,
+      distanciaKm: distanciaAtual ? Number(distanciaAtual.toFixed(2)) : null,
+      total: subtotal + taxaAtual,
+      pagamento: pagamento.value,
+      troco: troco.value ? Number(troco.value.replace(/\D/g, '')) : null,
+      status: 'novo',
+      criadoEm: firebase.firestore.FieldValue.serverTimestamp()
+    };
+
+    // Salvar no Firestore
+    await db.collection('pedidos').doc(pedido.id).set(pedido);
+
+    // Salvar localmente (histórico)
+    localStorage.setItem('pasterry_cliente_v1', JSON.stringify(pedido.cliente));
+    const hist = JSON.parse(localStorage.getItem('pedidos_pasterry_v1') || '[]');
+    hist.push({...pedido, criadoEm: new Date().toISOString()});
+    localStorage.setItem('pedidos_pasterry_v1', JSON.stringify(hist));
+
+    // Limpar carrinho e redirecionar
+    localStorage.removeItem(CART_KEY);
+    alert(`Pedido #${pedido.id} confirmado!`);
+    location.href = 'status.html?id=' + pedido.id;
+
+  } catch (err) {
+    console.error('Erro ao enviar pedido:', err);
+    erroEl.textContent = '❌ Erro ao enviar pedido: ' + (err.message || 'Erro desconhecido. Tente novamente.');
+    erroEl.classList.add('visible');
+    btn.disabled = false;
+    btn.textContent = 'Confirmar e Enviar';
+    document.getElementById('loadingOverlay').classList.remove('active');
+  }
+};
+
+// ============================================================
+// INICIALIZAÇÃO
+// ============================================================
+document.addEventListener('DOMContentLoaded', async () => {
+  await carregar();
+  renderMolhos();
+  renderCart();
+
+  // Eventos para calcular taxa
+  const rua = document.getElementById('rua');
+  const numero = document.getElementById('numero');
+  const cidade = document.getElementById('cidade');
+  rua.addEventListener('input', calcDebounced);
+  numero.addEventListener('input', calcDebounced);
+  cidade.addEventListener('change', calcDebounced);
+
+  // Mostrar campo troco quando pagamento for Dinheiro
+  const pagamento = document.getElementById('pagamento');
+  const troco = document.getElementById('troco');
+  pagamento.addEventListener('change', () => {
+    troco.style.display = pagamento.value === 'Dinheiro' ? 'block' : 'none';
+  });
+
+  // Máscara de telefone
+  const telEl = document.getElementById('telefone');
+  if (!telEl.value) telEl.value = '(11) ';
+  telEl.addEventListener('input', () => {
+    let v = telEl.value.replace(/\D/g, '').slice(0, 11);
+    if (v.length <= 2) {
+      telEl.value = v ? '(' + v : '';
+    } else if (v.length <= 7) {
+      telEl.value = `(${v.slice(0,2)}) ${v.slice(2)}`;
+    } else {
+      telEl.value = `(${v.slice(0,2)}) ${v.slice(2,7)}-${v.slice(7)}`;
+    }
+  });
+});
 </script>
 </body>
 </html>
