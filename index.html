@@ -5,31 +5,40 @@
   <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
   <title>Pasterry - Totem</title>
   <style>
-    /* ===== CSS COMPLETO ===== */
+    /* ===== CSS BASE ===== */
     :root {
-      --bg: #1A1210;
-      --card: #E8F5E9;
-      --accent: #07fcdb;
-      --muted: #1A1210;
-      --danger: #ac940d;
-      --glass: rgb(255, 217, 0);
-      --ok: #2b7245;
-      --whatsapp: #25D366;
-      font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+      --bg-site: #1A1210;
+      --bg-container: #1A1A1A;
+      --bg-topo: #1A1210;
+      --cor-categoria-ativa: #FFE066;
+      --cor-botao-adicionar: #2B7245;
+      --cor-categoria: #FFD700;
+      --cor-menu: #DC3545;
+      --cor-group-header: #FFD700;
+      --cor-cart: #AC940D;
+      --cor-fonte: #E6EEF6;
+      --cor-fonte-titulo: #FFFFFF;
+      --cor-fonte-preco: #AC940D;
+      --cor-fonte-muted: #9AA6B2;
     }
     *, *::before, *::after { box-sizing: border-box; }
     html, body {
       height: 100%;
       margin: 0;
-      background: linear-gradient(180deg, #1A1210 0%, #1A1210 60%);
-      color: #e6eef6;
+      background: var(--bg-site);
+      color: var(--cor-fonte);
       -webkit-font-smoothing: antialiased;
       scroll-behavior: smooth;
       -ms-overflow-style: none;
       scrollbar-width: none;
     }
     html::-webkit-scrollbar, body::-webkit-scrollbar { width: 0; height: 0; }
-    .app { min-height: 100vh; display: flex; flex-direction: column; }
+    .app {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      background: var(--bg-site);
+    }
 
     header {
       position: sticky;
@@ -39,10 +48,10 @@
       align-items: center;
       justify-content: space-between;
       padding: 8px 12px 4px 12px;
-      background: transparent !important;
+      background: var(--bg-topo) !important;
       backdrop-filter: none !important;
-      border-bottom: none !important;
-      box-shadow: none !important;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+      box-shadow: 0 2px 12px rgba(0,0,0,0.3);
       min-height: 70px;
       gap: 8px;
     }
@@ -83,7 +92,7 @@
     .status-horario .status.fechado { color: #f44336; }
     .status-horario .horario {
       font-weight: 600;
-      color: #ccc;
+      color: var(--cor-fonte-muted);
       font-size: clamp(9px, 1.2vw, 13px);
     }
 
@@ -107,17 +116,17 @@
     .search-box input {
       background: transparent;
       border: none;
-      color: #fff;
+      color: var(--cor-fonte);
       padding: 4px 0;
       outline: none;
       width: 100%;
       font-size: clamp(10px, 1.2vw, 13px);
     }
-    .search-box input::placeholder { color: #9aa6b2; font-size: clamp(9px, 1vw, 12px); }
+    .search-box input::placeholder { color: var(--cor-fonte-muted); font-size: clamp(9px, 1vw, 12px); }
     .search-box button {
       background: transparent;
       border: none;
-      color: #fff;
+      color: var(--cor-fonte);
       cursor: pointer;
       font-size: 16px;
       padding: 2px;
@@ -125,7 +134,7 @@
     }
 
     .menu-btn {
-      background: linear-gradient(135deg, #dc3545 0%, #ff4757 100%);
+      background: var(--cor-menu);
       border: none;
       border-radius: 30px;
       width: 40px;
@@ -136,8 +145,8 @@
       justify-content: center;
       gap: 3px;
       cursor: pointer;
-      box-shadow: 0 4px 15px rgba(220, 53, 69, 0.4), inset 0 -2px 0 rgba(0, 0, 0, 0.2);
-      transition: transform .15s ease;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+      transition: transform .15s ease, background .3s ease;
       padding: 0 4px;
       flex-shrink: 0;
     }
@@ -172,7 +181,7 @@
       align-items: center;
       gap: 12px;
       padding: 12px 16px;
-      color: #e6eef6;
+      color: var(--cor-fonte);
       text-decoration: none;
       font-weight: 600;
       font-size: 14px;
@@ -227,7 +236,7 @@
       flex: 0 0 calc(20% - 8px);
       min-width: 55px;
       padding: 8px 4px;
-      background: var(--glass);
+      background: var(--cor-categoria);
       border-radius: 30px;
       display: flex;
       align-items: center;
@@ -252,7 +261,7 @@
       outline: 3px solid var(--accent);
       box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
       transform: scale(1.05);
-      background: #ffe066;
+      background: var(--cor-categoria-ativa) !important;
     }
 
     .cat-section {
@@ -268,6 +277,7 @@
       margin: 2px 2px 6px;
       opacity: .7;
       font-size: clamp(13px, 2.2vw, 17px);
+      color: var(--cor-fonte-muted);
     }
     .cat-section .products {
       display: grid;
@@ -288,7 +298,7 @@
     .left { flex: 1; display: flex; flex-direction: column; min-width: 0; }
 
     .product {
-      background: rgba(0,0,0,0.15);
+      background: var(--bg-container);
       padding: 12px;
       border-radius: 14px;
       display: flex;
@@ -374,14 +384,26 @@
       gap: 4px;
       min-width: 0;
     }
-    .title { font-weight: 700; font-size: clamp(13px, 2.2vw, 18px); line-height: 1.2; }
-    .price { color: var(--danger); font-weight: 700; font-size: clamp(13px, 1.8vw, 18px); }
-    .muted { color: #9aa6b2; font-size: clamp(11px, 1.6vw, 13px); }
+    .title {
+      font-weight: 700;
+      font-size: clamp(13px, 2.2vw, 18px);
+      line-height: 1.2;
+      color: var(--cor-fonte-titulo);
+    }
+    .price {
+      color: var(--cor-fonte-preco);
+      font-weight: 700;
+      font-size: clamp(13px, 1.8vw, 18px);
+    }
+    .muted {
+      color: var(--cor-fonte-muted);
+      font-size: clamp(11px, 1.6vw, 13px);
+    }
     .add-btn {
       width: auto;
       padding: 5px 14px;
       border-radius: 6px;
-      background: var(--ok);
+      background: var(--cor-botao-adicionar);
       border: 0;
       color: #fff;
       font-weight: 800;
@@ -390,6 +412,7 @@
       align-self: flex-end;
       margin-top: 4px;
       flex-shrink: 0;
+      transition: background 0.3s ease, transform 0.08s;
     }
     .add-btn:active {
       transform: scale(0.97);
@@ -397,7 +420,7 @@
       box-shadow: inset 0 3px 6px rgba(0, 0, 0, .25);
     }
     .add-btn.loja-fechada {
-      background: #666;
+      background: #666 !important;
       cursor: not-allowed;
       opacity: 0.5;
     }
@@ -407,15 +430,16 @@
       padding: 12px;
       border-radius: 10px;
       border: 0;
-      background: var(--glass);
+      background: var(--cor-categoria);
       color: #1a1600;
       cursor: pointer;
       font-weight: 800;
       font-size: clamp(14px, 2vw, 16px);
     }
-    .btn.secondary { background: var(--glass); color: #1a1600; opacity: .9; }
+    .btn.secondary { background: var(--cor-categoria); opacity: .9; }
     .btn:disabled { opacity: .6; cursor: not-allowed; }
 
+    /* OVERLAYS (mantidos) */
     .overlay {
       position: fixed;
       inset: 0;
@@ -448,7 +472,7 @@
       padding: 14px 8px;
       font-size: 18px;
       border-radius: 8px;
-      background: var(--glass);
+      background: var(--cor-categoria);
       border: 1px solid rgba(255, 255, 255, 0.03);
       color: #1a1600;
       font-weight: 800;
@@ -541,7 +565,7 @@
       to { opacity: 1; transform: scale(1) translateY(0); }
     }
     .share-modal h3 { font-size: 22px; font-weight: 800; margin: 0 0 8px 0; color: #fff; text-align: center; }
-    .share-modal .subtitle { color: #9aa6b2; text-align: center; font-size: 14px; margin-bottom: 20px; }
+    .share-modal .subtitle { color: var(--cor-fonte-muted); text-align: center; font-size: 14px; margin-bottom: 20px; }
     .share-modal .share-options { display: flex; flex-direction: column; gap: 12px; }
     .share-btn-option {
       display: flex;
@@ -551,7 +575,7 @@
       border-radius: 14px;
       border: none;
       background: rgba(255,255,255,0.05);
-      color: #fff;
+      color: var(--cor-fonte);
       font-weight: 700;
       font-size: 16px;
       cursor: pointer;
@@ -576,7 +600,7 @@
       margin-top: 16px;
       background: none;
       border: none;
-      color: #6c7a8a;
+      color: var(--cor-fonte-muted);
       font-size: 14px;
       font-weight: 600;
       cursor: pointer;
@@ -584,7 +608,7 @@
       width: 100%;
       text-align: center;
     }
-    .share-modal .close-share:hover { color: #fff; }
+    .share-modal .close-share:hover { color: var(--cor-fonte); }
 
     #toastWrap {
       position: fixed;
@@ -604,7 +628,7 @@
       align-items: center;
       gap: 10px;
       background: rgba(7, 20, 40, .92);
-      color: #e6eef6;
+      color: var(--cor-fonte);
       border: 1px solid rgba(255, 255, 255, .06);
       box-shadow: 0 10px 30px rgba(0, 0, 0, .5);
       padding: 12px 14px;
@@ -619,14 +643,14 @@
       width: 28px;
       height: 28px;
       border-radius: 8px;
-      background: var(--ok);
+      background: var(--cor-botao-adicionar);
       display: grid;
       place-items: center;
       font-weight: 900;
       color: #fff;
     }
     .toast .title { font-weight: 800; font-size: 15px; line-height: 1.2; }
-    .toast .sub { color: var(--muted); font-size: 13px; }
+    .toast .sub { color: var(--cor-fonte-muted); font-size: 13px; }
     @keyframes toastIn { to { transform: translateY(0); opacity: 1; } }
     @keyframes toastOut { to { transform: translateY(-8px); opacity: 0; } }
 
@@ -649,13 +673,14 @@
       gap: 8px;
       padding: 14px 16px;
       border-radius: 12px;
-      background: var(--danger);
+      background: var(--cor-cart);
       color: #fff;
       font-weight: 900;
       font-size: clamp(16px, 3vw, 20px);
       border: 0;
       cursor: pointer;
       box-shadow: 0 10px 30px rgba(0, 0, 0, .45), inset 0 -2px 0 rgba(0, 0, 0, .15);
+      transition: background .3s ease;
     }
     .footer-cart .cart-ico { display: grid; place-items: center; }
     .footer-cart .cart-label {
@@ -686,15 +711,16 @@
     .group-header {
       font-weight: 900;
       font-size: clamp(16px, 3.5vw, 22px);
-      background: linear-gradient(135deg, #FFD700, #FFA500);
+      background: var(--cor-group-header);
       color: #1a1600;
       padding: 6px 14px;
       border-radius: 30px;
       display: inline-block;
       margin-bottom: 8px;
       letter-spacing: 0.3px;
-      box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3);
+      box-shadow: 0 4px 15px rgba(0,0,0,0.2);
       text-transform: uppercase;
+      transition: background .3s ease;
     }
 
     #centerToast {
@@ -725,8 +751,8 @@
       transform: translate(-50%, -50%) scale(1);
     }
     #centerToast .check-icon { font-size: 40px; color: #22c55e; }
-    #centerToast .msg { color: #fff; font-weight: 800; font-size: clamp(18px, 4vw, 22px); text-align: center; }
-    #centerToast .sub-msg { color: #9aa6b2; font-size: clamp(14px, 2.5vw, 16px); }
+    #centerToast .msg { color: var(--cor-fonte); font-weight: 800; font-size: clamp(18px, 4vw, 22px); text-align: center; }
+    #centerToast .sub-msg { color: var(--cor-fonte-muted); font-size: clamp(14px, 2.5vw, 16px); }
     @keyframes descerCarrinho {
       0% { top: 50%; opacity: 1; transform: translate(-50%, -50%) scale(1); }
       100% { top: 110%; opacity: 0; transform: translate(-50%, -50%) scale(0.6); }
@@ -883,7 +909,7 @@
     <div class="overlay" id="overlay" aria-hidden="true">
       <div class="dialog" role="dialog" aria-modal="true" aria-labelledby="dialogTitle">
         <div class="left-panel">
-          <div id="dialogTitle" style="font-weight:800;font-size:18px">Editar quantidade</div>
+          <div id="dialogTitle" style="font-weight:800;font-size:18px;color:var(--cor-fonte-titulo)">Editar quantidade</div>
           <div class="num-display" id="numDisplay">1</div>
           <div class="kbd" id="kbd">
             <button data-key="1">1</button><button data-key="2">2</button><button data-key="3">3</button>
@@ -895,7 +921,7 @@
         <div style="width:100%;display:flex;flex-direction:column;gap:8px;align-items:stretch">
           <button class="btn" id="saveQty" type="button">Salvar</button>
           <button class="btn secondary" id="cancelQty" type="button">Cancelar</button>
-          <div style="color:var(--muted);font-size:12px">Para quantidades grandes, use os botões 0-9</div>
+          <div style="color:var(--cor-fonte-muted);font-size:12px">Para quantidades grandes, use os botões 0-9</div>
         </div>
       </div>
     </div>
@@ -903,7 +929,7 @@
     <div class="overlay" id="sizeOverlay" aria-hidden="true" style="display:none">
       <div class="dialog" role="dialog" aria-modal="true" aria-labelledby="sizeTitle">
         <div class="left-panel">
-          <div id="sizeTitle" style="font-weight:800;font-size:18px"></div>
+          <div id="sizeTitle" style="font-weight:800;font-size:18px;color:var(--cor-fonte-titulo)"></div>
           <div id="sizeDesc" class="muted" style="margin-top:2px"></div>
           <div id="sizeOptions" style="display:grid;gap:8px;margin-top:8px"></div>
         </div>
@@ -948,10 +974,85 @@
     let menuItems = [];
     let lojaAberta = true;
     let termoBusca = '';
-    let logoMarcaAtual = ''; // guarda a URL da logo de marca
+    let logoMarcaAtual = '';
 
     const DIAS_SEMANA = ['domingo','segunda','terca','quarta','quinta','sexta','sabado'];
     let horariosCache = {};
+    let cores = {};
+
+    // ============================================================
+    // CARREGAR E APLICAR CORES (COM PRÉ-VISUALIZAÇÃO)
+    // ============================================================
+    function carregarCores() {
+      // Escuta as cores salvas
+      db.collection('config').doc('cores').onSnapshot((doc) => {
+        if (doc.exists) {
+          cores = doc.data();
+        } else {
+          cores = {
+            corFundoSite: '#1A1210',
+            corContainer: '#1A1A1A',
+            corTopo: '#1A1210',
+            corCategoriaAtiva: '#FFE066',
+            corBotaoAdicionar: '#2B7245',
+            corCategoria: '#FFD700',
+            corMenu: '#DC3545',
+            corGroupHeader: '#FFD700',
+            corCart: '#AC940D',
+            corFonte: '#E6EEF6',
+            corFonteTitulo: '#FFFFFF',
+            corFontePreco: '#AC940D',
+            corFonteMuted: '#9AA6B2'
+          };
+        }
+        // Se houver preview, ele sobrescreve as cores salvas
+        db.collection('config').doc('preview').onSnapshot((previewDoc) => {
+          if (previewDoc.exists) {
+            const previewCores = previewDoc.data();
+            // Mescla: preview tem prioridade
+            const coresFinais = { ...cores, ...previewCores };
+            aplicarCores(coresFinais);
+          } else {
+            aplicarCores(cores);
+          }
+        });
+      });
+    }
+
+    function aplicarCores(coresObj) {
+      const root = document.documentElement;
+      root.style.setProperty('--bg-site', coresObj.corFundoSite || '#1A1210');
+      root.style.setProperty('--bg-container', coresObj.corContainer || '#1A1A1A');
+      root.style.setProperty('--bg-topo', coresObj.corTopo || '#1A1210');
+      root.style.setProperty('--cor-categoria-ativa', coresObj.corCategoriaAtiva || '#FFE066');
+      root.style.setProperty('--cor-botao-adicionar', coresObj.corBotaoAdicionar || '#2B7245');
+      root.style.setProperty('--cor-categoria', coresObj.corCategoria || '#FFD700');
+      root.style.setProperty('--cor-menu', coresObj.corMenu || '#DC3545');
+      root.style.setProperty('--cor-group-header', coresObj.corGroupHeader || '#FFD700');
+      root.style.setProperty('--cor-cart', coresObj.corCart || '#AC940D');
+      root.style.setProperty('--cor-fonte', coresObj.corFonte || '#E6EEF6');
+      root.style.setProperty('--cor-fonte-titulo', coresObj.corFonteTitulo || '#FFFFFF');
+      root.style.setProperty('--cor-fonte-preco', coresObj.corFontePreco || '#AC940D');
+      root.style.setProperty('--cor-fonte-muted', coresObj.corFonteMuted || '#9AA6B2');
+
+      document.querySelectorAll('.cat').forEach(el => {
+        if (!el.classList.contains('active')) {
+          el.style.background = coresObj.corCategoria || '#FFD700';
+        }
+      });
+      const menuBtn = document.querySelector('.menu-btn');
+      if (menuBtn) menuBtn.style.background = coresObj.corMenu || '#DC3545';
+      document.querySelectorAll('.group-header').forEach(el => {
+        el.style.background = coresObj.corGroupHeader || '#FFD700';
+      });
+      const cartBtn = document.querySelector('.footer-cart');
+      if (cartBtn) cartBtn.style.background = coresObj.corCart || '#AC940D';
+      document.querySelectorAll('.add-btn').forEach(el => {
+        if (!el.classList.contains('loja-fechada')) {
+          el.style.background = coresObj.corBotaoAdicionar || '#2B7245';
+        }
+      });
+    }
 
     // ============================================================
     // HORÁRIOS
@@ -959,29 +1060,45 @@
     function atualizarStatusHorario() {
       const statusEl = document.getElementById('statusAberto');
       const horarioEl = document.getElementById('horarioTexto');
-      if (!horariosCache || Object.keys(horariosCache).length === 0) {
-        statusEl.textContent = '⚠️ Sem horário';
+
+      // PRIORIDADE: se a loja estiver fechada manualmente, mostra Fechado
+      if (!lojaAberta) {
+        statusEl.textContent = '🔴 Fechado';
         statusEl.className = 'status fechado';
-        horarioEl.textContent = 'Configure o horário no painel';
+        horarioEl.textContent = 'Loja fechada';
         return;
       }
+
+      // Se lojaAberta for true, verifica os horários
+      if (!horariosCache || Object.keys(horariosCache).length === 0) {
+        statusEl.textContent = '🟢 Aberto';
+        statusEl.className = 'status aberto';
+        horarioEl.textContent = 'Atendimento 24h';
+        return;
+      }
+
       const diaAtual = new Date().getDay();
       const diaNome = DIAS_SEMANA[diaAtual];
       const periodos = horariosCache[diaNome] || [];
+
       if (periodos.length === 0) {
         statusEl.textContent = '🔴 Fechado';
         statusEl.className = 'status fechado';
         horarioEl.textContent = 'Fechado hoje';
         return;
       }
+
       const agora = new Date();
       const horaAtual = String(agora.getHours()).padStart(2,'0')+':'+String(agora.getMinutes()).padStart(2,'0');
+
       let aberto = false;
       for (const p of periodos) {
         if (horaAtual >= p.inicio && horaAtual < p.fim) { aberto = true; break; }
       }
+
       const formatPeriodo = (p) => `${p.inicio} - ${p.fim}`;
       let horarioTexto = periodos.map(p => formatPeriodo(p)).join(' | ');
+
       if (aberto) {
         statusEl.textContent = '🟢 Aberto';
         statusEl.className = 'status aberto';
@@ -1058,9 +1175,11 @@
           lojaAberta = true;
         }
         atualizarStatusLojaUI();
+        atualizarStatusHorario(); // atualiza o status com a nova flag
       }).catch(() => {
         lojaAberta = true;
         atualizarStatusLojaUI();
+        atualizarStatusHorario();
       });
     }
 
@@ -1316,6 +1435,11 @@
           productsWrap.scrollTo({ top, behavior: 'smooth' });
         }
       }
+      document.querySelectorAll('.cat').forEach(el => {
+        if (!el.classList.contains('active')) {
+          el.style.background = cores.corCategoria || '#FFD700';
+        }
+      });
     }
 
     let scrollObserver = null;
@@ -1360,6 +1484,8 @@
         activeCategory = CATEGORIES[0].id;
         setActiveCategory(activeCategory);
       }
+      // Aplicar cores após criar
+      aplicarCores(cores);
     }
 
     function ordenarProdutos(lista) {
@@ -1438,6 +1564,7 @@
       document.querySelectorAll('.add-btn').forEach(bindPressAnimation);
       setupScrollSpy();
       scrollParaProduto();
+      aplicarCores(cores);
     }
 
     function compartilharProduto(id, categoria, title) {
@@ -1527,6 +1654,11 @@
       addBtn.setAttribute('aria-label', `Adicionar ${getDisplayName(p.title)}`);
       addBtn.textContent = lojaAberta ? 'Adicionar' : '🔴 Fechado';
       addBtn.disabled = !lojaAberta;
+      if (!lojaAberta) {
+        addBtn.style.background = '#666';
+      } else {
+        addBtn.style.background = cores.corBotaoAdicionar || '#2B7245';
+      }
       addBtn.addEventListener('click', (e) => {
         e.stopPropagation();
         if (!lojaAberta) {
@@ -1842,7 +1974,6 @@
       updateCheckoutText();
       iniciarCarrossel();
 
-      // Escuta em tempo real para logos e status
       db.collection('config').doc('loja').onSnapshot((doc) => {
         if (doc.exists) {
           const data = doc.data();
@@ -1861,8 +1992,8 @@
           if (data.lojaAberta !== undefined) {
             lojaAberta = data.lojaAberta;
             atualizarStatusLojaUI();
-            // Re-renderizar para atualizar botões
-            renderProducts();
+            atualizarStatusHorario(); // atualiza o status do topo
+            renderProducts(); // recria os botões com a nova flag
           }
         }
       }, (error) => {
@@ -1875,6 +2006,7 @@
       carregarStatusLoja();
       carregarMenu();
       carregarCardapio();
+      carregarCores(); // carrega as cores (com preview)
       setInterval(atualizarStatusHorario, 60000);
     }
 
