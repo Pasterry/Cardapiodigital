@@ -55,14 +55,52 @@ h3 {
 .btn.add-btn:hover { filter: brightness(0.9); }
 .btn.add-btn:active { transform: scale(0.95); }
 
-/* Grid de itens do carrinho */
-.itens-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-  gap: 10px;
+/* Carrossel */
+.carrossel-container {
+  position: relative;
   margin-bottom: 16px;
 }
+.carrossel-wrapper {
+  overflow-x: auto;
+  scroll-behavior: smooth;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  padding-bottom: 4px;
+}
+.carrossel-wrapper::-webkit-scrollbar { display: none; }
+.carrossel-track {
+  display: flex;
+  gap: 10px;
+  padding: 2px 4px;
+}
+.carrossel-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(0,0,0,0.7);
+  color: #fff;
+  border: none;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  font-size: 18px;
+  cursor: pointer;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  backdrop-filter: blur(4px);
+}
+.carrossel-btn:hover { background: rgba(0,0,0,0.9); }
+.carrossel-btn:active { transform: translateY(-50%) scale(0.9); }
+.carrossel-btn.prev { left: -8px; }
+.carrossel-btn.next { right: -8px; }
+.carrossel-btn.hidden { display: none; }
+
+/* Cards no carrossel */
 .item-card {
+  flex: 0 0 150px;
   background: var(--bg-container, #2a201d);
   border-radius: 14px;
   padding: 10px;
@@ -70,7 +108,11 @@ h3 {
   border: 2px solid transparent;
   display: flex;
   flex-direction: column;
-  transition: background 0.3s;
+  transition: all 0.2s;
+}
+.item-card:hover {
+  border-color: #07fcdb;
+  transform: translateY(-2px);
 }
 .item-card img {
   width: 100%;
@@ -96,6 +138,26 @@ h3 {
   font-size: 10px;
   color: var(--text-muted, #9aa6b2);
   margin-bottom: 4px;
+}
+
+/* Indicador de scroll */
+.scroll-indicator {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  margin-top: 8px;
+}
+.scroll-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #3a3330;
+  transition: all 0.3s;
+}
+.scroll-dot.active {
+  background: #07fcdb;
+  width: 20px;
+  border-radius: 10px;
 }
 
 /* Items no carrinho */
@@ -196,12 +258,10 @@ h3 {
 }
 .cupom h4 { margin: 0 0 8px; color: #07fcdb; }
 
-/* Campo de cupom */
 .cupom-input-group { display: flex; gap: 8px; margin: 8px 0; }
 .cupom-input-group input { flex: 1; margin: 0; }
 .cupom-input-group button { padding: 10px 16px; white-space: nowrap; margin: 0; }
 .cupom-msg { font-size: 11px; min-height: 16px; margin-top: 4px; }
-.cupom-msg.success { color: #28a745; }
 .cupom-msg.error { color: #dc3545; }
 .cupom-aplicado {
   background: #1e3a1e; border: 1px solid #28a745;
@@ -210,7 +270,6 @@ h3 {
   font-size: 13px;
 }
 
-/* Geo */
 .geo-btn {
   width: 100%; padding: 12px;
   background: linear-gradient(135deg, #28a745, #07fcdb);
@@ -220,7 +279,6 @@ h3 {
 .geo-btn:disabled { opacity: 0.5; cursor: wait; }
 .geo-status { text-align: center; font-size: 12px; min-height: 18px; color: #07fcdb; margin-bottom: 8px; }
 
-/* Toast */
 .toast {
   position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
   background: #28a745; color: #fff; padding: 12px 24px; border-radius: 30px;
@@ -233,7 +291,6 @@ h3 {
   to { transform: translateX(-50%) translateY(0); opacity: 1; }
 }
 
-/* Spinner */
 .spinner {
   display: inline-block; width: 16px; height: 16px;
   border: 2px solid rgba(255,255,255,0.3); border-top-color: #fff;
@@ -242,25 +299,26 @@ h3 {
 }
 @keyframes spin { to { transform: rotate(360deg); } }
 
-/* Vazio */
 .empty-cart { text-align: center; padding: 40px 20px; opacity: 0.6; }
 .empty-cart .icon { font-size: 64px; margin-bottom: 16px; }
-
-.optional-tag {
-  font-size: 10px;
-  color: var(--text-muted, #9aa6b2);
-  font-weight: normal;
-  margin-left: 4px;
-}
 </style>
 </head>
 <body>
 
 <div id="toast" style="display:none;"></div>
 
+<!-- Carrossel de itens -->
 <h3>🛍️ Adicionar Itens</h3>
-<div class="itens-grid" id="itensDisponiveis"></div>
+<div class="carrossel-container">
+  <button class="carrossel-btn prev hidden" id="carrosselPrev" onclick="scrollCarrossel(-1)">‹</button>
+  <div class="carrossel-wrapper" id="carrosselWrapper">
+    <div class="carrossel-track" id="itensDisponiveis"></div>
+  </div>
+  <button class="carrossel-btn next hidden" id="carrosselNext" onclick="scrollCarrossel(1)">›</button>
+</div>
+<div class="scroll-indicator" id="scrollIndicator"></div>
 
+<!-- Itens no carrinho -->
 <h3>🛒 Itens do Pedido</h3>
 <div id="cart"></div>
 <button class="btn danger" onclick="limparSacola()" style="margin-top:12px;width:100%;">🗑️ Esvaziar sacola</button>
@@ -278,7 +336,6 @@ h3 {
     <button class="modal-close" onclick="fecharModal()">✕</button>
     <h3>📋 Finalizar Pedido</h3>
     
-    <!-- Cupom de desconto -->
     <div style="margin-bottom:12px;">
       <label style="font-weight:600;font-size:0.9rem;">🎫 Cupom de desconto</label>
       <div class="cupom-input-group">
@@ -346,52 +403,30 @@ const CART_KEY = 'pasterry_cart_v1';
 const CLIENT_KEY = 'pasterry_cliente_v1';
 const PEDIDOS_HIST_KEY = 'pedidos_pasterry_v1';
 
-// ========== CORES DINÂMICAS ==========
+// ========== CORES ==========
 const CORES_PADRAO = {
-  corFundoSite: '#1A1210',
-  corContainer: '#1A1A1A',
-  corTopo: '#1A1210',
-  corCategoriaAtiva: '#FFE066',
-  corBotaoAdicionar: '#2B7245',
-  corCategoria: '#FFD700',
-  corMenu: '#DC3545',
-  corGroupHeader: '#FFD700',
-  corCart: '#AC940D',
-  corFonte: '#E6EEF6',
-  corFonteTitulo: '#FFFFFF',
-  corFontePreco: '#AC940D',
-  corFonteMuted: '#9AA6B2'
+  corFundoSite: '#1A1210', corContainer: '#1A1A1A', corTopo: '#1A1210',
+  corCategoriaAtiva: '#FFE066', corBotaoAdicionar: '#2B7245', corCategoria: '#FFD700',
+  corMenu: '#DC3545', corGroupHeader: '#FFD700', corCart: '#AC940D',
+  corFonte: '#E6EEF6', corFonteTitulo: '#FFFFFF', corFontePreco: '#AC940D', corFonteMuted: '#9AA6B2'
 };
 
 async function carregarCores() {
   try {
     const previewSnap = await getDoc(doc(db, "config", "preview"));
     let cores;
-    if (previewSnap.exists()) {
-      cores = previewSnap.data();
-    } else {
-      const coresSnap = await getDoc(doc(db, "config", "cores"));
-      cores = coresSnap.exists() ? coresSnap.data() : CORES_PADRAO;
-    }
+    if (previewSnap.exists()) { cores = previewSnap.data(); }
+    else { const coresSnap = await getDoc(doc(db, "config", "cores")); cores = coresSnap.exists() ? coresSnap.data() : CORES_PADRAO; }
     aplicarCores(cores);
-  } catch(e) {
-    aplicarCores(CORES_PADRAO);
-  }
+  } catch(e) { aplicarCores(CORES_PADRAO); }
 }
 
 function aplicarCores(cores) {
   const root = document.documentElement;
   root.style.setProperty('--bg-site', cores.corFundoSite || CORES_PADRAO.corFundoSite);
   root.style.setProperty('--bg-container', cores.corContainer || CORES_PADRAO.corContainer);
-  root.style.setProperty('--bg-topo', cores.corTopo || CORES_PADRAO.corTopo);
   root.style.setProperty('--btn-add', cores.corBotaoAdicionar || CORES_PADRAO.corBotaoAdicionar);
-  root.style.setProperty('--categoria-ativa', cores.corCategoriaAtiva || CORES_PADRAO.corCategoriaAtiva);
-  root.style.setProperty('--categoria', cores.corCategoria || CORES_PADRAO.corCategoria);
-  root.style.setProperty('--menu', cores.corMenu || CORES_PADRAO.corMenu);
-  root.style.setProperty('--group-header', cores.corGroupHeader || CORES_PADRAO.corGroupHeader);
-  root.style.setProperty('--cart', cores.corCart || CORES_PADRAO.corCart);
   root.style.setProperty('--text-geral', cores.corFonte || CORES_PADRAO.corFonte);
-  root.style.setProperty('--text-titulo', cores.corFonteTitulo || CORES_PADRAO.corFonteTitulo);
   root.style.setProperty('--text-preco', cores.corFontePreco || CORES_PADRAO.corFontePreco);
   root.style.setProperty('--text-muted', cores.corFonteMuted || CORES_PADRAO.corFonteMuted);
   document.body.style.background = cores.corFundoSite || CORES_PADRAO.corFundoSite;
@@ -417,283 +452,236 @@ function calcularTaxa(km) {
 async function gerarNumeroPedido() {
   try {
     const contadorRef = doc(db, "config", "contador_pedidos");
-    const novoNumero = await runTransaction(db, async (transaction) => {
+    return await runTransaction(db, async (transaction) => {
       const snap = await transaction.get(contadorRef);
       if (!snap.exists()) { transaction.set(contadorRef, { ultimoNumero: 1050 }); return 1050; }
-      const dados = snap.data();
-      const proximo = (dados.ultimoNumero || 1050) + 1;
+      const proximo = (snap.data().ultimoNumero || 1050) + 1;
       transaction.update(contadorRef, { ultimoNumero: proximo });
       return proximo;
     });
-    return novoNumero;
   } catch(e) { return Math.floor(Date.now() / 1000) % 100000; }
 }
 
-function mostrarToast(mensagem, erro = false) {
-  const toast = document.getElementById('toast');
-  toast.textContent = mensagem;
-  toast.className = 'toast' + (erro ? ' error' : '');
-  toast.style.display = 'block';
-  setTimeout(() => { toast.style.display = 'none'; }, 3000);
+function mostrarToast(m, e) {
+  const t = document.getElementById('toast');
+  t.textContent = m; t.className = 'toast' + (e ? ' error' : '');
+  t.style.display = 'block';
+  setTimeout(() => t.style.display = 'none', 3000);
 }
+function debounce(fn, d) { let t; return (...a) => { clearTimeout(t); t = setTimeout(() => fn(...a), d); }; }
 
-function debounce(fn, delay) { let timer; return (...args) => { clearTimeout(timer); timer = setTimeout(() => fn(...args), delay); }; }
+// ========== CARROSSEL ==========
+let currentScrollPage = 0;
+const cardsPerPage = () => window.innerWidth > 600 ? 4 : 2.5;
+
+window.scrollCarrossel = (direction) => {
+  const wrapper = document.getElementById('carrosselWrapper');
+  const cardWidth = 160; // 150px card + 10px gap
+  const scrollAmount = cardWidth * Math.floor(cardsPerPage());
+  wrapper.scrollBy({ left: direction * scrollAmount, behavior: 'smooth' });
+};
+
+function atualizarCarrossel() {
+  const wrapper = document.getElementById('carrosselWrapper');
+  const prevBtn = document.getElementById('carrosselPrev');
+  const nextBtn = document.getElementById('carrosselNext');
+  const maxScroll = wrapper.scrollWidth - wrapper.clientWidth;
+  
+  prevBtn.classList.toggle('hidden', wrapper.scrollLeft <= 0);
+  nextBtn.classList.toggle('hidden', wrapper.scrollLeft >= maxScroll - 1);
+  
+  // Atualizar dots
+  const totalPages = Math.ceil(wrapper.scrollWidth / (160 * Math.floor(cardsPerPage())));
+  const currentPage = Math.round(wrapper.scrollLeft / (160 * Math.floor(cardsPerPage())));
+  const indicator = document.getElementById('scrollIndicator');
+  
+  if (totalPages > 1) {
+    indicator.innerHTML = Array.from({length: totalPages}, (_, i) => 
+      `<div class="scroll-dot ${i === currentPage ? 'active' : ''}"></div>`
+    ).join('');
+    indicator.style.display = 'flex';
+  } else {
+    indicator.style.display = 'none';
+  }
+}
 
 // ========== CARREGAR CONFIGURAÇÕES ==========
 async function carregarConfiguracoes() {
   try {
     await carregarCores();
-    
     nomeColecaoProdutos = localStorage.getItem('colecaoProdutos') || 'produtos';
     nomeColecaoCategorias = localStorage.getItem('colecaoCategorias') || 'categorias';
 
     const snapEntrega = await getDoc(doc(db, "config", "entrega"));
-    if (snapEntrega.exists()) {
-      configEntrega = snapEntrega.data();
-      if (configEntrega.googleMapsApiKey) { GOOGLE_KEY = configEntrega.googleMapsApiKey; localStorage.setItem('gmaps_key', GOOGLE_KEY); }
-    } else {
-      configEntrega = { loja: { lat: -23.27824, lon: -46.73661 }, faixas: [{ ate: 3, taxa: 5 }, { ate: 5, taxa: 7 }, { ate: 8, taxa: 10 }], cidades: ['Franco da Rocha', 'Francisco Morato', 'Caieiras'] };
-    }
+    configEntrega = snapEntrega.exists() ? snapEntrega.data() : { loja: { lat: -23.27824, lon: -46.73661 }, faixas: [{ ate: 3, taxa: 5 }, { ate: 5, taxa: 7 }, { ate: 8, taxa: 10 }], cidades: ['Franco da Rocha', 'Francisco Morato', 'Caieiras'] };
+    if (configEntrega.googleMapsApiKey) { GOOGLE_KEY = configEntrega.googleMapsApiKey; localStorage.setItem('gmaps_key', GOOGLE_KEY); }
     if (!GOOGLE_KEY) GOOGLE_KEY = localStorage.getItem('gmaps_key');
 
     const snapLoja = await getDoc(doc(db, "config", "loja"));
     if (snapLoja.exists()) {
-      const dadosLoja = snapLoja.data();
-      lojaAberta = dadosLoja.lojaAberta !== false;
-      if (!lojaAberta && dadosLoja.terminoFechamento && Date.now() >= dadosLoja.terminoFechamento) lojaAberta = true;
+      const d = snapLoja.data();
+      lojaAberta = d.lojaAberta !== false;
+      if (!lojaAberta && d.terminoFechamento && Date.now() >= d.terminoFechamento) lojaAberta = true;
     }
 
-    const selectCidade = document.getElementById('cidade');
-    if (configEntrega.cidades?.length) {
-      selectCidade.innerHTML = '<option value="">Selecione sua cidade*</option>' + configEntrega.cidades.map(c => `<option value="${c}">${c}</option>`).join('');
-    }
+    const sel = document.getElementById('cidade');
+    if (configEntrega.cidades?.length) sel.innerHTML = '<option value="">Selecione sua cidade*</option>' + configEntrega.cidades.map(c => `<option value="${c}">${c}</option>`).join('');
 
-    const clienteSalvo = localStorage.getItem(CLIENT_KEY);
-    if (clienteSalvo) {
+    const cs = localStorage.getItem(CLIENT_KEY);
+    if (cs) {
       try {
-        const c = JSON.parse(clienteSalvo);
-        if (c.nome) document.getElementById('nome').value = c.nome || '';
-        if (c.telefone) document.getElementById('telefone').value = c.telefone || '';
-        if (c.rua) document.getElementById('rua').value = c.rua || '';
-        if (c.numero) document.getElementById('numero').value = c.numero || '';
-        if (c.bairro) document.getElementById('bairro').value = c.bairro || '';
-        if (c.cidade) document.getElementById('cidade').value = c.cidade || '';
-        if (c.complemento) document.getElementById('complemento').value = c.complemento || '';
+        const c = JSON.parse(cs);
+        ['nome','telefone','rua','numero','bairro','cidade','complemento'].forEach(k => { if (c[k]) document.getElementById(k).value = c[k]; });
       } catch(e) {}
     }
 
     await carregarItensCarrinho();
     renderTotais();
-  } catch(e) { console.error('Erro:', e); mostrarToast('Erro ao carregar configurações.', true); }
+  } catch(e) { mostrarToast('Erro ao carregar.', true); }
 }
 
 async function carregarItensCarrinho() {
   try {
-    const catQuery = query(collection(db, nomeColecaoCategorias), where("oculta", "==", true), where("ativo", "==", true));
-    const catSnap = await getDocs(catQuery);
-    const categoriasOcultas = [];
-    catSnap.forEach(doc => categoriasOcultas.push(doc.id));
+    const catSnap = await getDocs(query(collection(db, nomeColecaoCategorias), where("oculta", "==", true), where("ativo", "==", true)));
+    const cats = []; catSnap.forEach(d => cats.push(d.id));
+    if (!cats.length) { itensDisponiveis = []; renderizarItensDisponiveis(); return; }
 
-    if (!categoriasOcultas.length) { itensDisponiveis = []; renderizarItensDisponiveis(); return; }
-
-    const todosProdutos = [];
-    for (const catId of categoriasOcultas) {
-      const prodQuery = query(collection(db, nomeColecaoProdutos), where("categoria", "==", catId), where("ativo", "==", true));
-      const prodSnap = await getDocs(prodQuery);
-      prodSnap.forEach(doc => {
-        const data = doc.data();
+    const prods = [];
+    for (const cid of cats) {
+      const pSnap = await getDocs(query(collection(db, nomeColecaoProdutos), where("categoria", "==", cid), where("ativo", "==", true)));
+      pSnap.forEach(d => {
+        const data = d.data();
         let preco = data.price || 0;
-        if (!preco && data.sizes) {
-          const primeiroTamanho = Object.values(data.sizes)[0];
-          if (primeiroTamanho) preco = Number(primeiroTamanho);
-        }
-        todosProdutos.push({ id: doc.id, nome: data.title || 'Sem nome', preco: preco, desc: data.desc || '', img: data.img || '', sizes: data.sizes || null, unidade: data.unidade || '' });
+        if (!preco && data.sizes) { const pv = Object.values(data.sizes)[0]; if (pv) preco = Number(pv); }
+        prods.push({ id: d.id, nome: data.title || 'Sem nome', preco, desc: data.desc || '', img: data.img || '', unidade: data.unidade || '' });
       });
     }
-    itensDisponiveis = todosProdutos;
+    itensDisponiveis = prods;
     renderizarItensDisponiveis();
-  } catch(e) { console.error('Erro:', e); itensDisponiveis = []; renderizarItensDisponiveis(); }
+  } catch(e) { itensDisponiveis = []; renderizarItensDisponiveis(); }
 }
 
 function renderizarItensDisponiveis() {
   const container = document.getElementById('itensDisponiveis');
   if (!itensDisponiveis.length) {
-    container.innerHTML = '<p style="color:var(--text-muted, #9aa6b2);grid-column:1/-1;text-align:center;">Nenhum item disponível.</p>';
+    container.innerHTML = '<p style="color:var(--text-muted);padding:20px;text-align:center;width:100%;">Nenhum item disponível.</p>';
+    document.getElementById('scrollIndicator').style.display = 'none';
     return;
   }
   container.innerHTML = itensDisponiveis.map(item => `
     <div class="item-card">
       <img src="${item.img || ''}" alt="${item.nome}" onerror="this.style.display='none'">
       <div class="item-nome">${item.nome}</div>
-      ${item.unidade ? `<div style="font-size:10px;color:var(--text-muted, #9aa6b2);">${item.unidade}</div>` : ''}
-      ${item.desc ? `<div class="item-desc">${item.desc}</div>` : ''}
+      ${item.unidade ? `<div style="font-size:10px;color:var(--text-muted);">${item.unidade}</div>` : ''}
       <div class="item-preco">${money(item.preco)}</div>
       <button class="btn add-btn" onclick="adicionarAoCarrinho('${item.id}')">➕ Adicionar</button>
     </div>
   `).join('');
+  
+  setTimeout(atualizarCarrossel, 100);
 }
 
 window.adicionarAoCarrinho = (id) => {
   const item = itensDisponiveis.find(i => i.id === id);
   if (!item) return;
   const cart = getCart();
-  const existente = cart.find(c => c.id === id);
-  if (existente) {
-    existente.qty++;
-    mostrarToast(`${item.nome} adicionado (${existente.qty}x)`);
-  } else {
-    cart.push({ id: item.id, title: item.nome, price: Number(item.preco), qty: 1, img: item.img || '', size: null });
-    mostrarToast(`${item.nome} adicionado!`);
-  }
-  setCart(cart);
-  renderCart();
+  const ex = cart.find(c => c.id === id);
+  if (ex) { ex.qty++; mostrarToast(`${item.nome} (${ex.qty}x)`); }
+  else { cart.push({ id: item.id, title: item.nome, price: Number(item.preco), qty: 1, img: item.img || '' }); mostrarToast(`${item.nome} adicionado!`); }
+  setCart(cart); renderCart();
 };
 
 function renderCart() {
   const cart = getCart();
-  const container = document.getElementById('cart');
-  if (!cart.length) {
-    container.innerHTML = `<div class="empty-cart"><div class="icon">🛒</div><div>Sacola vazia</div></div>`;
-  } else {
-    container.innerHTML = cart.map((item, i) => `
-      <div class="cart-item">
-        <img src="${item.img || ''}" alt="${item.title}" onerror="this.style.display='none'">
-        <div class="item-info">
-          <div class="item-title">${item.title}</div>
-          ${item.size ? `<div style="font-size:11px;color:#07fcdb;">${item.size}</div>` : ''}
-          <div class="item-price">${money(item.price)} cada</div>
-          <div style="font-size:12px;color:#07fcdb;margin-top:2px;">Subtotal: ${money(item.price * item.qty)}</div>
-        </div>
-        <div class="qty-controls">
-          <button class="btn secondary small" onclick="alterarQtd(${i}, -1)">−</button>
-          <span>${item.qty}</span>
-          <button class="btn primary small" onclick="alterarQtd(${i}, 1)">+</button>
-        </div>
-        <button class="remove-btn" onclick="removerItem(${i})" title="Remover">✕</button>
+  const c = document.getElementById('cart');
+  c.innerHTML = cart.length ? cart.map((item, i) => `
+    <div class="cart-item">
+      <img src="${item.img || ''}" alt="${item.title}" onerror="this.style.display='none'">
+      <div class="item-info">
+        <div class="item-title">${item.title}</div>
+        <div class="item-price">${money(item.price)} cada</div>
+        <div style="font-size:12px;color:#07fcdb;">Subtotal: ${money(item.price * item.qty)}</div>
       </div>
-    `).join('');
-  }
+      <div class="qty-controls">
+        <button class="btn secondary small" onclick="alterarQtd(${i},-1)">−</button>
+        <span>${item.qty}</span>
+        <button class="btn primary small" onclick="alterarQtd(${i},1)">+</button>
+      </div>
+      <button class="remove-btn" onclick="removerItem(${i})">✕</button>
+    </div>
+  `).join('') : `<div class="empty-cart"><div class="icon">🛒</div><div>Sacola vazia</div></div>`;
   renderTotais();
-  const btnConfirmar = document.getElementById('btnConfirmar');
-  if (btnConfirmar) {
-    btnConfirmar.disabled = cart.length === 0;
-    btnConfirmar.textContent = !lojaAberta ? '🔒 Loja Fechada' : '✅ Confirmar Pedido';
-    if (!lojaAberta) btnConfirmar.disabled = true;
-  }
+  const b = document.getElementById('btnConfirmar');
+  if (b) { b.disabled = !cart.length; b.textContent = !lojaAberta ? '🔒 Loja Fechada' : '✅ Confirmar Pedido'; if (!lojaAberta) b.disabled = true; }
 }
 
-function calcularDesconto(subtotal) {
+function calcularDesconto(s) {
   if (!cupomAtual) return 0;
-  if (cupomAtual.tipo === 'percentual') return subtotal * (cupomAtual.valor / 100);
-  if (cupomAtual.tipo === 'fixo') return Math.min(cupomAtual.valor, subtotal);
-  return 0;
+  return cupomAtual.tipo === 'percentual' ? s * (cupomAtual.valor / 100) : Math.min(cupomAtual.valor, s);
 }
 
 function renderTotais() {
   const cart = getCart();
-  const sub = cart.reduce((s, i) => s + (Number(i.price) || 0) * (Number(i.qty) || 0), 0);
-  const desconto = calcularDesconto(sub);
+  const sub = cart.reduce((s, i) => s + (Number(i.price)||0) * (Number(i.qty)||0), 0);
+  const desc = calcularDesconto(sub);
   const taxa = taxaAtual !== null ? taxaAtual : 0;
-  const total = sub - desconto + taxa;
-
   document.getElementById('totais').innerHTML = `
     <div class="totais">
       <div class="linha"><span>Subtotal</span><span>${money(sub)}</span></div>
-      ${desconto > 0 ? `<div class="linha desconto"><span>🎫 Desconto ${cupomAtual.codigo}</span><span>-${money(desconto)}</span></div>` : ''}
-      <div class="linha"><span>Entrega</span><span>${taxaAtual !== null ? money(taxaAtual) : '<span style="opacity:0.5;">Calculando...</span>'}${distanciaAtual ? ` <small>(${distanciaAtual.toFixed(1)} km)</small>` : ''}</span></div>
-      <div class="linha total"><span>Total</span><span>${money(total)}</span></div>
-    </div>
-  `;
+      ${desc > 0 ? `<div class="linha desconto"><span>🎫 ${cupomAtual.codigo}</span><span>-${money(desc)}</span></div>` : ''}
+      <div class="linha"><span>Entrega</span><span>${taxaAtual !== null ? money(taxa) : 'Calculando...'}${distanciaAtual ? ` (${distanciaAtual.toFixed(1)} km)` : ''}</span></div>
+      <div class="linha total"><span>Total</span><span>${money(sub - desc + taxa)}</span></div>
+    </div>`;
 }
 
 function renderCupom() {
   const cart = getCart();
-  const sub = cart.reduce((s, i) => s + (Number(i.price) || 0) * (Number(i.qty) || 0), 0);
-  const desconto = calcularDesconto(sub);
+  const sub = cart.reduce((s, i) => s + (Number(i.price)||0) * (Number(i.qty)||0), 0);
+  const desc = calcularDesconto(sub);
   const taxa = taxaAtual !== null ? taxaAtual : 0;
-  const total = sub - desconto + taxa;
-
-  document.getElementById('cupomItens').innerHTML = cart.map(i => `
-    <div style="display:flex;justify-content:space-between;margin-bottom:4px;">
-      <span>${i.qty}x ${i.title}${i.size ? ' (' + i.size + ')' : ''}</span><span>${money(i.price * i.qty)}</span>
-    </div>
-  `).join('');
-
+  document.getElementById('cupomItens').innerHTML = cart.map(i => `<div style="display:flex;justify-content:space-between;margin-bottom:4px;"><span>${i.qty}x ${i.title}</span><span>${money(i.price*i.qty)}</span></div>`).join('');
   document.getElementById('cupomTotal').innerHTML = `
     <div style="display:flex;justify-content:space-between;"><span>Subtotal</span><span>${money(sub)}</span></div>
-    ${desconto > 0 ? `<div style="display:flex;justify-content:space-between;color:#28a745;"><span>🎫 Desconto (${cupomAtual.codigo})</span><span>-${money(desconto)}</span></div>` : ''}
-    <div style="display:flex;justify-content:space-between;color:#07fcdb;"><span>Entrega</span><span>${taxaAtual !== null ? money(taxa) : 'Calculando...'}</span></div>
-    <div style="display:flex;justify-content:space-between;font-weight:bold;font-size:16px;margin-top:8px;padding-top:8px;border-top:1px solid #444;"><span>Total</span><span>${money(total)}</span></div>
-  `;
+    ${desc>0?`<div style="display:flex;justify-content:space-between;color:#28a745;"><span>🎫 ${cupomAtual.codigo}</span><span>-${money(desc)}</span></div>`:''}
+    <div style="display:flex;justify-content:space-between;color:#07fcdb;"><span>Entrega</span><span>${taxaAtual!==null?money(taxa):'Calculando...'}</span></div>
+    <div style="display:flex;justify-content:space-between;font-weight:bold;font-size:16px;margin-top:8px;padding-top:8px;border-top:1px solid #444;"><span>Total</span><span>${money(sub-desc+taxa)}</span></div>`;
 }
 
 // ========== CUPOM ==========
 window.aplicarCupom = async () => {
-  const codigo = document.getElementById('cupomInput').value.trim().toUpperCase();
-  const msgEl = document.getElementById('cupomMsg');
-  const infoEl = document.getElementById('cupomAplicadoInfo');
-  
-  if (!codigo) { msgEl.textContent = 'Digite um código.'; msgEl.className = 'cupom-msg error'; return; }
-
+  const cod = document.getElementById('cupomInput').value.trim().toUpperCase();
+  const msg = document.getElementById('cupomMsg');
+  if (!cod) { msg.textContent = 'Digite um código.'; msg.className = 'cupom-msg error'; return; }
   try {
-    const cuponsSnap = await getDoc(doc(db, "config", "cupons"));
-    if (!cuponsSnap.exists()) { msgEl.textContent = 'Cupom inválido.'; msgEl.className = 'cupom-msg error'; return; }
-
-    const cupons = cuponsSnap.data().cupons || [];
-    const cupomEncontrado = cupons.find(c => c.codigo.toUpperCase() === codigo && c.ativo);
-    
-    if (!cupomEncontrado) { msgEl.textContent = 'Cupom não encontrado.'; msgEl.className = 'cupom-msg error'; return; }
-
-    if (cupomEncontrado.validade) {
-      const hoje = new Date().toISOString().split('T')[0];
-      if (cupomEncontrado.validade < hoje) { msgEl.textContent = 'Cupom expirado.'; msgEl.className = 'cupom-msg error'; return; }
-    }
-
-    if (cupomEncontrado.usos !== undefined && cupomEncontrado.usos <= 0) { msgEl.textContent = 'Cupom esgotado.'; msgEl.className = 'cupom-msg error'; return; }
-
-    const cart = getCart();
-    const subtotal = cart.reduce((s, i) => s + (Number(i.price) || 0) * (Number(i.qty) || 0), 0);
-    if (cupomEncontrado.valorMinimo && subtotal < cupomEncontrado.valorMinimo) {
-      msgEl.textContent = `Pedido mínimo de ${money(cupomEncontrado.valorMinimo)}.`; msgEl.className = 'cupom-msg error'; return;
-    }
-
-    cupomAtual = cupomEncontrado;
-    msgEl.textContent = ''; msgEl.className = 'cupom-msg';
-    
-    infoEl.style.display = 'block';
-    infoEl.innerHTML = `
-      <div class="cupom-aplicado">
-        <div><strong>🎫 ${cupomAtual.codigo}</strong><br><small>${cupomAtual.descricao || ''} (${cupomAtual.tipo === 'percentual' ? cupomAtual.valor + '%' : money(cupomAtual.valor)} off)</small></div>
-        <button class="btn danger small" onclick="removerCupom()" style="padding:4px 10px;">✕</button>
-      </div>
-    `;
-    
+    const snap = await getDoc(doc(db, "config", "cupons"));
+    if (!snap.exists()) { msg.textContent = 'Cupom inválido.'; msg.className = 'cupom-msg error'; return; }
+    const cupons = snap.data().cupons || [];
+    const cp = cupons.find(c => c.codigo.toUpperCase() === cod && c.ativo);
+    if (!cp) { msg.textContent = 'Cupom não encontrado.'; msg.className = 'cupom-msg error'; return; }
+    if (cp.validade && cp.validade < new Date().toISOString().split('T')[0]) { msg.textContent = 'Expirado.'; msg.className = 'cupom-msg error'; return; }
+    if (cp.usos !== undefined && cp.usos <= 0) { msg.textContent = 'Esgotado.'; msg.className = 'cupom-msg error'; return; }
+    const sub = getCart().reduce((s,i)=>s+(Number(i.price)||0)*(Number(i.qty)||0),0);
+    if (cp.valorMinimo && sub < cp.valorMinimo) { msg.textContent = `Mínimo ${money(cp.valorMinimo)}.`; msg.className = 'cupom-msg error'; return; }
+    cupomAtual = cp; msg.textContent = ''; msg.className = 'cupom-msg';
+    document.getElementById('cupomAplicadoInfo').style.display = 'block';
+    document.getElementById('cupomAplicadoInfo').innerHTML = `<div class="cupom-aplicado"><div><strong>🎫 ${cp.codigo}</strong><br><small>${cp.descricao||''} (${cp.tipo==='percentual'?cp.valor+'%':money(cp.valor)} off)</small></div><button class="btn danger small" onclick="removerCupom()">✕</button></div>`;
     document.getElementById('cupomInput').disabled = true;
-    renderTotais(); renderCupom();
-    mostrarToast('Cupom aplicado!');
-  } catch(e) { msgEl.textContent = 'Erro ao verificar cupom.'; msgEl.className = 'cupom-msg error'; }
+    renderTotais(); renderCupom(); mostrarToast('Cupom aplicado!');
+  } catch(e) { msg.textContent = 'Erro.'; msg.className = 'cupom-msg error'; }
 };
-
 window.removerCupom = () => {
   cupomAtual = null;
-  document.getElementById('cupomInput').value = '';
-  document.getElementById('cupomInput').disabled = false;
-  document.getElementById('cupomMsg').textContent = '';
-  document.getElementById('cupomMsg').className = 'cupom-msg';
-  document.getElementById('cupomAplicadoInfo').style.display = 'none';
-  renderTotais(); renderCupom();
-  mostrarToast('Cupom removido');
+  document.getElementById('cupomInput').value = ''; document.getElementById('cupomInput').disabled = false;
+  document.getElementById('cupomMsg').textContent = ''; document.getElementById('cupomAplicadoInfo').style.display = 'none';
+  renderTotais(); renderCupom(); mostrarToast('Cupom removido');
 };
 
 // ========== TAXA ==========
 async function calcularTaxaEndereco() {
-  const rua = document.getElementById('rua').value.trim();
-  const numero = document.getElementById('numero').value.trim();
-  const cidade = document.getElementById('cidade').value;
-  if (rua.length < 3 || !numero || !cidade || !GOOGLE_KEY) return;
+  const r = document.getElementById('rua').value.trim(), n = document.getElementById('numero').value.trim(), cid = document.getElementById('cidade').value;
+  if (r.length<3||!n||!cid||!GOOGLE_KEY) return;
   try {
-    const endereco = `${rua}, ${numero}, ${cidade}, SP, Brasil`;
-    const resp = await fetch(`https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(endereco)}&key=${GOOGLE_KEY}`);
+    const resp = await fetch(`https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(`${r}, ${n}, ${cid}, SP`)}&key=${GOOGLE_KEY}`);
     const data = await resp.json();
     if (data.results?.[0] && configEntrega?.loja) {
       const loc = data.results[0].geometry.location;
@@ -706,49 +694,27 @@ async function calcularTaxaEndereco() {
 const calcDebounced = debounce(calcularTaxaEndereco, 800);
 
 // ========== AÇÕES ==========
-window.alterarQtd = (index, delta) => {
+window.alterarQtd = (i, d) => {
   const cart = getCart();
-  if (!cart[index]) return;
-  cart[index].qty += delta;
-  if (cart[index].qty <= 0) { cart.splice(index, 1); mostrarToast('Item removido'); }
+  if (!cart[i]) return;
+  cart[i].qty += d;
+  if (cart[i].qty <= 0) { cart.splice(i, 1); mostrarToast('Item removido'); }
   setCart(cart); renderCart();
   if (document.getElementById('modalEndereco').classList.contains('active')) renderCupom();
 };
-
-window.removerItem = (index) => {
-  const cart = getCart();
-  if (!cart[index]) return;
-  cart.splice(index, 1);
-  setCart(cart); renderCart();
-  if (document.getElementById('modalEndereco').classList.contains('active')) renderCupom();
-};
-
-window.limparSacola = () => {
-  if (!confirm('Esvaziar sacola?')) return;
-  localStorage.removeItem(CART_KEY);
-  cupomAtual = null;
-  document.getElementById('cupomInput').value = '';
-  document.getElementById('cupomInput').disabled = false;
-  document.getElementById('cupomAplicadoInfo').style.display = 'none';
-  renderCart();
-};
+window.removerItem = (i) => { const cart = getCart(); if (!cart[i]) return; cart.splice(i, 1); setCart(cart); renderCart(); if (document.getElementById('modalEndereco').classList.contains('active')) renderCupom(); };
+window.limparSacola = () => { if (!confirm('Esvaziar?')) return; localStorage.removeItem(CART_KEY); cupomAtual = null; document.getElementById('cupomInput').value = ''; document.getElementById('cupomInput').disabled = false; document.getElementById('cupomAplicadoInfo').style.display = 'none'; renderCart(); };
 
 // ========== MODAL ==========
-window.abrirModal = () => {
-  const cart = getCart();
-  if (!cart.length) return mostrarToast('Adicione pelo menos 1 item', true);
-  if (!lojaAberta) return mostrarToast('Loja fechada', true);
-  document.getElementById('modalEndereco').classList.add('active');
-  renderCupom();
-};
+window.abrirModal = () => { if (!getCart().length) return mostrarToast('Adicione itens', true); if (!lojaAberta) return mostrarToast('Loja fechada', true); document.getElementById('modalEndereco').classList.add('active'); renderCupom(); };
 window.fecharModal = () => document.getElementById('modalEndereco').classList.remove('active');
-document.getElementById('modalEndereco').addEventListener('click', (e) => { if (e.target === e.currentTarget) fecharModal(); });
+document.getElementById('modalEndereco').addEventListener('click', e => { if (e.target === e.currentTarget) fecharModal(); });
 
 // ========== GEO ==========
 window.usarLocalizacao = () => {
   if (!navigator.geolocation) { document.getElementById('geoStatus').textContent = 'GPS não suportado'; return; }
-  const btnGeo = document.getElementById('btnGeo'), geoStatus = document.getElementById('geoStatus');
-  btnGeo.disabled = true; geoStatus.textContent = '🔍 Buscando...';
+  const btn = document.getElementById('btnGeo'), gs = document.getElementById('geoStatus');
+  btn.disabled = true; gs.textContent = '🔍 Buscando...';
   navigator.geolocation.getCurrentPosition(async (pos) => {
     try {
       const lat = pos.coords.latitude, lon = pos.coords.longitude;
@@ -758,115 +724,82 @@ window.usarLocalizacao = () => {
         const data = await resp.json();
         if (data.results?.[0]) {
           const comp = data.results[0].address_components;
-          const get = (t) => comp.find(c => c.types.includes(t))?.long_name || '';
+          const get = t => comp.find(c => c.types.includes(t))?.long_name || '';
           if (get('route')) document.getElementById('rua').value = get('route');
           if (get('street_number')) document.getElementById('numero').value = get('street_number');
-          if (get('sublocality') || get('neighborhood')) document.getElementById('bairro').value = get('sublocality') || get('neighborhood');
-          const cid = get('administrative_area_level_2') || get('locality');
+          if (get('sublocality')||get('neighborhood')) document.getElementById('bairro').value = get('sublocality')||get('neighborhood');
+          const cid = get('administrative_area_level_2')||get('locality');
           if (cid) { const sel = document.getElementById('cidade'); if (![...sel.options].some(o => o.value === cid)) sel.innerHTML += `<option value="${cid}">${cid}</option>`; sel.value = cid; }
         }
       }
-      renderTotais(); renderCupom();
-      geoStatus.textContent = `✅ Localização encontrada - ${distanciaAtual ? distanciaAtual.toFixed(1) + ' km' : ''}`;
-    } catch(e) { geoStatus.textContent = '❌ Erro'; }
-    btnGeo.disabled = false;
-  }, () => { geoStatus.textContent = '❌ Permita o acesso'; btnGeo.disabled = false; }, { enableHighAccuracy: true, timeout: 15000 });
+      renderTotais(); renderCupom(); gs.textContent = `✅ Encontrada - ${distanciaAtual?.toFixed(1)} km`;
+    } catch(e) { gs.textContent = '❌ Erro'; }
+    btn.disabled = false;
+  }, () => { gs.textContent = '❌ Permita o acesso'; btn.disabled = false; }, { enableHighAccuracy: true, timeout: 15000 });
 };
 
 // ========== ENVIAR PEDIDO ==========
 window.enviarPedido = async () => {
   const cart = getCart();
-  const btnEnviar = document.getElementById('btnEnviar');
   if (!cart.length) return mostrarToast('Sacola vazia', true);
-
   const nome = document.getElementById('nome').value.trim();
-  const telefone = document.getElementById('telefone').value.trim();
+  const tel = document.getElementById('telefone').value.trim();
   const cidade = document.getElementById('cidade').value;
   const rua = document.getElementById('rua').value.trim();
-  const numero = document.getElementById('numero').value.trim();
+  const num = document.getElementById('numero').value.trim();
   const bairro = document.getElementById('bairro').value.trim();
-  const complemento = document.getElementById('complemento').value.trim();
-  const pagamento = document.getElementById('pagamento').value;
+  const comp = document.getElementById('complemento').value.trim();
+  const pag = document.getElementById('pagamento').value;
   const troco = document.getElementById('troco').value.trim();
-
-  if (!nome) return mostrarToast('Informe seu nome', true);
-  const telDigits = telefone.replace(/\D/g, '');
-  if (telDigits.length < 10) return mostrarToast('WhatsApp inválido', true);
-  if (!cidade || !rua || !numero || !bairro) return mostrarToast('Preencha o endereço completo', true);
-  if (!pagamento) return mostrarToast('Selecione o pagamento', true);
-  
-  if (taxaAtual === null && distanciaAtual === null) { await calcularTaxaEndereco(); if (taxaAtual === null) return mostrarToast('Não foi possível calcular a taxa.', true); }
+  if (!nome) return mostrarToast('Nome obrigatório', true);
+  const telD = tel.replace(/\D/g,'');
+  if (telD.length<10) return mostrarToast('WhatsApp inválido', true);
+  if (!cidade||!rua||!num||!bairro) return mostrarToast('Endereço completo', true);
+  if (!pag) return mostrarToast('Pagamento', true);
+  if (taxaAtual===null&&distanciaAtual===null) { await calcularTaxaEndereco(); if (taxaAtual===null) return mostrarToast('Taxa não calculada', true); }
   if (!lojaAberta) return mostrarToast('Loja fechada', true);
 
-  btnEnviar.disabled = true;
-  btnEnviar.innerHTML = '<span class="spinner"></span> Enviando...';
+  const btn = document.getElementById('btnEnviar');
+  btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Enviando...';
 
   try {
-    const numeroPedido = await gerarNumeroPedido();
-    const subtotal = cart.reduce((s, i) => s + (Number(i.price) || 0) * (Number(i.qty) || 0), 0);
-    const desconto = calcularDesconto(subtotal);
-    const taxa = taxaAtual !== null ? taxaAtual : 5;
-    const total = subtotal - desconto + taxa;
+    const numPed = await gerarNumeroPedido();
+    const sub = cart.reduce((s,i)=>s+(Number(i.price)||0)*(Number(i.qty)||0),0);
+    const desc = calcularDesconto(sub);
+    const taxa = taxaAtual!==null?taxaAtual:5;
+    const total = sub - desc + taxa;
 
-    const itensFormatados = cart.map(i => ({
-      id: i.id, nome: i.title, title: i.title, size: i.size || null,
-      preco: Number(i.price), price: Number(i.price), valor: Number(i.price),
-      quantidade: Number(i.qty), qty: Number(i.qty),
-      total: Number(i.price) * Number(i.qty), img: i.img || ''
-    }));
-
-    const pedidoId = 'PED_' + numeroPedido;
     const pedido = {
-      id: pedidoId,
-      numeroPedido,
-      origem: 'Online',
-      cliente: { nome, telefone: telDigits, cidade, rua, numero, bairro, complemento, pagamento },
-      itens: itensFormatados,
-      subtotal,
-      desconto: desconto > 0 ? desconto : null,
-      cupom: cupomAtual ? cupomAtual.codigo : null,
-      taxaEntrega: taxa,
-      distanciaKm: distanciaAtual ? Number(distanciaAtual.toFixed(2)) : null,
-      total,
-      pagamento,
-      troco: troco || null,
-      status: 'novo',
-      criadoEm: serverTimestamp(),
-      criadoEmMs: Date.now()
+      id: 'PED_'+numPed, numeroPedido: numPed, origem: 'Online',
+      cliente: { nome, telefone: telD, cidade, rua, numero: num, bairro, complemento: comp, pagamento: pag },
+      itens: cart.map(i=>({ id:i.id, nome:i.title, title:i.title, preco:Number(i.price), price:Number(i.price), valor:Number(i.price), quantidade:Number(i.qty), qty:Number(i.qty), total:Number(i.price)*Number(i.qty), img:i.img||'' })),
+      subtotal: sub, desconto: desc>0?desc:null, cupom: cupomAtual?.codigo||null,
+      taxaEntrega: taxa, distanciaKm: distanciaAtual?Number(distanciaAtual.toFixed(2)):null,
+      total, pagamento: pag, troco: troco||null,
+      status: 'novo', criadoEm: serverTimestamp(), criadoEmMs: Date.now()
     };
 
-    await setDoc(doc(db, "pedidos", pedidoId), pedido);
+    await setDoc(doc(db, "pedidos", 'PED_'+numPed), pedido);
 
-    // Decrementar uso do cupom
     if (cupomAtual) {
-      const cuponsSnap = await getDoc(doc(db, "config", "cupons"));
-      if (cuponsSnap.exists()) {
-        const cupons = cuponsSnap.data().cupons || [];
-        const idx = cupons.findIndex(c => c.codigo === cupomAtual.codigo);
-        if (idx !== -1 && cupons[idx].usos !== undefined) {
-          cupons[idx].usos--;
-          await setDoc(doc(db, "config", "cupons"), { cupons }, { merge: true });
-        }
+      const snap = await getDoc(doc(db, "config", "cupons"));
+      if (snap.exists()) {
+        const cupons = snap.data().cupons || [];
+        const idx = cupons.findIndex(c=>c.codigo===cupomAtual.codigo);
+        if (idx!==-1&&cupons[idx].usos!==undefined) { cupons[idx].usos--; await setDoc(doc(db,"config","cupons"),{cupons},{merge:true}); }
       }
     }
 
-    localStorage.setItem(CLIENT_KEY, JSON.stringify({ nome, telefone, cidade, rua, numero, bairro, complemento }));
-    
-    const hist = JSON.parse(localStorage.getItem(PEDIDOS_HIST_KEY) || '[]');
-    hist.unshift({ id: pedidoId, numero: numeroPedido, total, data: new Date().toISOString(), itens: cart.length });
-    if (hist.length > 20) hist.length = 20;
+    localStorage.setItem(CLIENT_KEY, JSON.stringify({nome,telefone:tel,cidade,rua,numero:num,bairro,complemento:comp}));
+    const hist = JSON.parse(localStorage.getItem(PEDIDOS_HIST_KEY)||'[]');
+    hist.unshift({id:'PED_'+numPed,numero:numPed,total,data:new Date().toISOString(),itens:cart.length});
+    if (hist.length>20) hist.length=20;
     localStorage.setItem(PEDIDOS_HIST_KEY, JSON.stringify(hist));
-
     localStorage.removeItem(CART_KEY);
     cupomAtual = null;
-    mostrarToast(`✅ Pedido #${numeroPedido} confirmado!`);
-    setTimeout(() => { window.location.href = 'status.html?id=' + pedidoId; }, 1500);
-  } catch(e) {
-    console.error('Erro:', e);
-    mostrarToast('Erro ao enviar pedido.', true);
-    btnEnviar.disabled = false;
-    btnEnviar.innerHTML = '✅ Confirmar e Enviar Pedido';
-  }
+    mostrarToast(`✅ Pedido #${numPed} confirmado!`);
+    setTimeout(()=>location.href='status.html?id=PED_'+numPed, 1500);
+  } catch(e) { mostrarToast('Erro ao enviar.', true); btn.disabled=false; btn.innerHTML='✅ Confirmar e Enviar Pedido'; }
 };
 
 // ========== EVENTOS ==========
@@ -874,35 +807,32 @@ document.getElementById('rua').addEventListener('input', calcDebounced);
 document.getElementById('numero').addEventListener('input', calcDebounced);
 document.getElementById('cidade').addEventListener('change', calcDebounced);
 document.getElementById('pagamento').addEventListener('change', function() {
-  const trocoEl = document.getElementById('troco');
-  trocoEl.style.display = this.value === 'Dinheiro' ? 'block' : 'none';
-  if (this.value !== 'Dinheiro') trocoEl.value = '';
+  const tr = document.getElementById('troco');
+  tr.style.display = this.value === 'Dinheiro' ? 'block' : 'none';
+  if (this.value !== 'Dinheiro') tr.value = '';
 });
 
 const telEl = document.getElementById('telefone');
 if (!telEl.value) telEl.value = '(11) ';
 telEl.addEventListener('input', function() {
-  let v = this.value.replace(/\D/g, '').slice(0, 11);
-  if (v.length <= 2) this.value = v ? '(' + v : '';
-  else if (v.length <= 7) this.value = `(${v.slice(0,2)}) ${v.slice(2)}`;
-  else this.value = `(${v.slice(0,2)}) ${v.slice(2,7)}-${v.slice(7)}`;
+  let v = this.value.replace(/\D/g,'').slice(0,11);
+  this.value = v.length<=2 ? (v?'('+v:'') : v.length<=7 ? `(${v.slice(0,2)}) ${v.slice(2)}` : `(${v.slice(0,2)}) ${v.slice(2,7)}-${v.slice(7)}`;
 });
 
-document.addEventListener('keydown', (e) => { if (e.key === 'Escape') fecharModal(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') fecharModal(); });
+
+// Carrossel eventos
+document.getElementById('carrosselWrapper').addEventListener('scroll', atualizarCarrossel);
+window.addEventListener('resize', atualizarCarrossel);
 
 async function init() {
   await carregarConfiguracoes();
   renderCart();
   if (!lojaAberta) {
-    mostrarToast('⚠️ Loja fechada no momento.', true);
+    mostrarToast('⚠️ Loja fechada.', true);
     const btn = document.getElementById('btnConfirmar');
     if (btn) { btn.disabled = true; btn.textContent = '🔒 Loja Fechada'; }
   }
-}
-init();
-</script>
-</body>
-</html>
 }
 init();
 </script>
