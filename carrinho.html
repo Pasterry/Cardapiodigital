@@ -41,8 +41,6 @@ h3{margin:0 0 12px;font-size:22px;color:#07fcdb}
 </head>
 <body>
 
-<h3>🥫 Molhos</h3>
-<div class="molhos" id="molhos"></div>
 
 <h3>🛒 Itens do Pedido</h3>
 <div id="cart"></div>
@@ -122,17 +120,11 @@ const db = firebase.firestore();
 
 console.log('🔥 Firebase inicializado com sucesso!');
 
-// ============================================================
-// VARIÁVEIS GLOBAIS
-// ============================================================
-const CART_KEY = 'pasterry_cart_v1';
-const SAUCES = {
-  'Molho Barbecue': {img: 'img/barbecue.jpg', price: 5},
-  'Molho Mostarda': {img: 'img/mostarda.jpg', price: 5},
-  'Molho Cheddar': {img: 'img/cheddar.jpg', price: 5},
-  'Molho Tartaro': {img: 'img/tartaro.jpg', price: 5},
-  'Ketchup': {img: 'img/ketchup.jpg', price: 5}
-};
+
+
+
+
+
 
 let GOOGLE_KEY = localStorage.getItem('gmaps_key') || "AIzaSyDV9tPC5XNNmB_REgW1au2NtpP1ETtV1i0";
 let taxaAtual = null;
