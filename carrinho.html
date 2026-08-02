@@ -99,6 +99,13 @@ function calcularTaxa(km) {
 }
 
 // ============================================================
+// FUNÇÃO PARA GERAR CÓDIGO ALEATÓRIO
+// ============================================================
+function gerarCodigoPedido() {
+  return Math.floor(100000 + Math.random() * 900000).toString();
+}
+
+// ============================================================
 // CARREGAR CONFIGURAÇÕES
 // ============================================================
 async function carregar() {
@@ -383,6 +390,9 @@ window.enviarPedido = async () => {
   document.getElementById('loadingOverlay').classList.add('active');
 
   try {
+    // GERA CÓDIGO ALEATÓRIO NUMÉRICO
+    const codigoPedido = gerarCodigoPedido();
+    
     const subtotal = c.reduce((s, i) => s + (Number(i.price) || 0) * (Number(i.qty) || 1), 0);
     const itensFormatados = c.map(i => ({
       id: i.id,
@@ -398,7 +408,8 @@ window.enviarPedido = async () => {
     }));
 
     const pedido = {
-      id: 'A' + Date.now(),
+      id: codigoPedido,
+      numeroPedido: codigoPedido,
       origem: 'cardapio',
       cliente: {
         nome: nome.value.trim(),
@@ -421,11 +432,12 @@ window.enviarPedido = async () => {
       pagamento: pagamento.value,
       troco: troco.value ? Number(troco.value.replace(/\D/g, '')) : null,
       status: 'novo',
-      criadoEm: firebase.firestore.FieldValue.serverTimestamp()
+      criadoEm: firebase.firestore.FieldValue.serverTimestamp(),
+      criadoEmMs: Date.now()
     };
 
     // Salvar no Firestore
-    await db.collection('pedidos').doc(pedido.id).set(pedido);
+    await db.collection('pedidos').doc(codigoPedido).set(pedido);
 
     // Salvar localmente (histórico)
     localStorage.setItem('pasterry_cliente_v1', JSON.stringify(pedido.cliente));
@@ -435,8 +447,8 @@ window.enviarPedido = async () => {
 
     // Limpar carrinho e redirecionar
     localStorage.removeItem(CART_KEY);
-    alert(`Pedido #${pedido.id} confirmado!`);
-    location.href = 'status.html?id=' + pedido.id;
+    alert(`Pedido #${codigoPedido} confirmado!`);
+    location.href = 'status.html?id=' + codigoPedido;
 
   } catch (err) {
     console.error('Erro ao enviar pedido:', err);
