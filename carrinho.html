@@ -99,10 +99,10 @@ function calcularTaxa(km) {
 }
 
 // ============================================================
-// FUNÇÃO PARA GERAR CÓDIGO ALEATÓRIO
+// FUNÇÃO PARA GERAR CÓDIGO ALEATÓRIO DE 4 DÍGITOS
 // ============================================================
 function gerarCodigoPedido() {
-  return Math.floor(100000 + Math.random() * 900000).toString();
+  return Math.floor(1000 + Math.random() * 9000).toString();
 }
 
 // ============================================================
@@ -390,7 +390,7 @@ window.enviarPedido = async () => {
   document.getElementById('loadingOverlay').classList.add('active');
 
   try {
-    // GERA CÓDIGO ALEATÓRIO NUMÉRICO
+    // GERA CÓDIGO ALEATÓRIO DE 4 DÍGITOS
     const codigoPedido = gerarCodigoPedido();
     
     const subtotal = c.reduce((s, i) => s + (Number(i.price) || 0) * (Number(i.qty) || 1), 0);
