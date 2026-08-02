@@ -13,23 +13,25 @@ h3{margin:0 0 12px;font-size:22px;color:#07fcdb}
 .btn.primary:disabled{opacity:.4;cursor:not-allowed}
 .btn.secondary{background:#E8F5E9;color:#1A1210}
 .btn.danger{background:#dc3545;color:#fff}
-.cart-item{display:flex;align-items:center;gap:10px;padding:8px;background:#2a201d;border-radius:8px;margin-bottom:8px}
+.btn.danger:hover{background:#c82333}
+.btn.primary:hover{background:#218838}
+.cart-item{display:flex;align-items:center;gap:10px;padding:8px;background:#2a201d;border-radius:8px;margin-bottom:8px;border:1px solid rgba(255,255,255,0.05)}
 .cart-item img{width:50px;height:50px;object-fit:cover;border-radius:6px}
-.molhos{display:flex;overflow-x:auto;gap:8px;margin:10px 0;scrollbar-width:none;-ms-overflow-style:none}
-.molhos::-webkit-scrollbar{display:none}
-.molho-card{flex:0 0 120px;background:#2a201d;border-radius:8px;padding:6px;text-align:center}
-.molho-card img{width:100%;height:48px;object-fit:cover;border-radius:6px}
 .totais{background:#2a201d;border-radius:10px;padding:12px}
-#modalEndereco{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.6);justify-content:center;align-items:center;z-index:110}
-.modal-content{background:#272323;padding:15px;border-radius:10px;width:320px;max-width:92vw;max-height:90vh;overflow:auto;scrollbar-width:none}
+#modalEndereco{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.7);justify-content:center;align-items:center;z-index:110}
+.modal-content{background:#272323;padding:15px;border-radius:10px;width:340px;max-width:92vw;max-height:90vh;overflow:auto;scrollbar-width:none}
 .modal-content::-webkit-scrollbar{display:none}
 .modal-content input,.modal-content select{width:100%;padding:8px;margin:6px 0;border:1px solid #444;border-radius:8px;background:#1A1210;color:#e6eef6;box-sizing:border-box}
 .modal-content input::placeholder{color:#888}
-.cupom{background:#1A1210;border:1px dashed #444;padding:10px;margin:10px 0;font-size:13px}
+.modal-content input:focus,.modal-content select:focus{outline:2px solid #07fcdb;border-color:#07fcdb}
+.cupom{background:#1A1210;border:1px dashed #444;padding:10px;margin:10px 0;font-size:13px;border-radius:8px}
+.cupom h4{margin:0 0 8px 0;color:#07fcdb}
 .footer-actions{position:fixed;bottom:0;left:0;width:100%;background:#1A1210;padding:12px 16px;box-sizing:border-box;border-top:1px solid #333}
 .footer-buttons{display:flex;gap:12px}
 .btn-large{padding:12px 16px;font-size:16px;flex:1}
 .geo-btn{width:100%;padding:12px;background:linear-gradient(135deg,#28a745,#07fcdb);color:#000;border:none;border-radius:10px;font-weight:bold;margin:8px 0;cursor:pointer}
+.geo-btn:hover{opacity:0.9}
+.geo-btn:disabled{opacity:0.5;cursor:not-allowed}
 .geo-status{text-align:center;font-size:12px;min-height:16px;color:#07fcdb}
 .erro-geral{background:rgba(255,92,92,0.15);color:#ffb4b4;padding:10px;border-radius:10px;margin-top:10px;display:none;border:1px solid rgba(255,92,92,0.3)}
 .erro-geral.visible{display:block}
@@ -37,25 +39,35 @@ h3{margin:0 0 12px;font-size:22px;color:#07fcdb}
 .loading-overlay.active{display:flex}
 .spinner{width:40px;height:40px;border-radius:50%;border:4px solid rgba(255,255,255,0.1);border-top-color:#FFD700;animation:spin 0.8s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
+.cart-empty{opacity:.6;text-align:center;padding:40px 20px}
+.cart-empty .icon{font-size:48px;display:block;margin-bottom:12px}
+.cart-empty .sub{font-size:14px;color:#888}
+.item-info{flex:1}
+.item-info .title{font-weight:600;font-size:15px}
+.item-info .price{color:#AC940D;font-weight:700;font-size:14px;margin-top:2px}
+.quantity-control{display:flex;align-items:center;gap:6px}
+.quantity-control button{padding:4px 10px;border:none;border-radius:6px;font-weight:bold;cursor:pointer;font-size:16px}
+.quantity-control button.minus{background:#dc3545;color:#fff}
+.quantity-control button.plus{background:#28a745;color:#fff}
+.quantity-control span{font-weight:700;font-size:16px;min-width:24px;text-align:center}
+.btn-remove{background:transparent;border:none;color:#dc3545;font-size:18px;cursor:pointer;padding:4px 8px}
+.btn-remove:hover{color:#ff6b6b}
 </style>
 </head>
 <body>
 
-
-<h3>🛒 Itens do Pedido</h3>
+<h3>🛒 Sacola de Pedidos</h3>
 <div id="cart"></div>
-
-<button class="btn danger" onclick="limparSacola()">🗑️ Esvaziar sacola</button>
 
 <div class="footer-actions">
   <div id="totais"></div>
   <div class="footer-buttons">
-    <button class="btn danger btn-large" onclick="location.href='index.html'">⬅️ Voltar</button>
+    <button class="btn danger btn-large" onclick="voltarParaTotem()">⬅️ Voltar</button>
     <button id="btnConfirmar" class="btn primary btn-large" onclick="abrirModal()">✅ Confirmar</button>
   </div>
 </div>
 
-<!-- MODAL -->
+<!-- MODAL ENDEREÇO -->
 <div id="modalEndereco">
   <div class="modal-content">
     <button class="btn secondary" style="float:right" onclick="fecharModal()">✕ Fechar</button>
@@ -114,22 +126,18 @@ const firebaseConfig = {
   appId: "1:390619980929:web:5bb015938e9dcb89389980"
 };
 
-// Inicializa Firebase
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 
-console.log('🔥 Firebase inicializado com sucesso!');
-
-
-
-
-
-
-
+// ============================================================
+// CONSTANTES E VARIÁVEIS
+// ============================================================
+const CART_KEY = 'pasterry_cart_v1';
 let GOOGLE_KEY = localStorage.getItem('gmaps_key') || "AIzaSyDV9tPC5XNNmB_REgW1au2NtpP1ETtV1i0";
 let taxaAtual = null;
 let distanciaAtual = null;
 let configEntrega = null;
+let cart = [];
 
 // ============================================================
 // FUNÇÕES AUXILIARES
@@ -167,11 +175,17 @@ function calcularTaxa(km) {
   return faixa ? Number(faixa.taxa) : Number(faixas[faixas.length - 1].taxa);
 }
 
-// ============================================================
-// GERAR CÓDIGO ALEATÓRIO (APENAS NÚMEROS)
-// ============================================================
 function gerarCodigoPedido() {
   return Math.floor(100000 + Math.random() * 900000).toString();
+}
+
+// ============================================================
+// VOLTAR PARA O TOTEM
+// ============================================================
+function voltarParaTotem() {
+  // Salva o carrinho antes de voltar
+  setCart(cart);
+  window.location.href = 'totem.html';
 }
 
 // ============================================================
@@ -195,7 +209,6 @@ async function carregarConfiguracoes() {
       GOOGLE_KEY = configEntrega.googleMapsApiKey;
     }
     
-    // Preencher cidades
     const select = document.getElementById('cidade');
     select.innerHTML = '<option value="">Selecione sua cidade*</option>';
     (configEntrega.cidades || []).forEach(c => {
@@ -210,7 +223,6 @@ async function carregarConfiguracoes() {
     
   } catch (err) {
     console.error('❌ Erro ao carregar configurações:', err);
-    // Fallback
     configEntrega = {
       loja: {lat: -23.27824, lon: -46.73661},
       faixas: [{ate: 3, taxa: 5}, {ate: 5, taxa: 7}, {ate: 8, taxa: 10}],
@@ -274,36 +286,35 @@ async function calcularTaxaEndereco() {
 const calcDebounced = debounce(calcularTaxaEndereco, 800);
 
 // ============================================================
-// RENDERIZAÇÃO
+// RENDERIZAÇÃO DO CARRINHO
 // ============================================================
-function renderMolhos() {
-  const container = document.getElementById('molhos');
-  container.innerHTML = Object.entries(SAUCES).map(([nome, s]) => `
-    <div class="molho-card">
-      <img src="${s.img}" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22120%22 height=%2248%22%3E%3Crect width=%22120%22 height=%2248%22 fill=%22%230a1420%22/%3E%3Ctext x=%2260%22 y=%2230%22 text-anchor=%22middle%22 fill=%22%239aa6b2%22 font-size=%2214%22%3E🥫%3C/text%3E%3C/svg%3E'">
-      <div>${nome}</div>
-      <div>${money(s.price)}</div>
-      <button class="btn primary" onclick="addMolho('${nome}')">+</button>
-    </div>
-  `).join('');
-}
-
 function renderCart() {
-  const c = getCart();
+  cart = getCart();
   const container = document.getElementById('cart');
   
-  if (c.length === 0) {
-    container.innerHTML = '<div style="opacity:.6;text-align:center;padding:20px">🛒 Sacola vazia<br>Adicione um pastel ou molho</div>';
+  if (cart.length === 0) {
+    container.innerHTML = `
+      <div class="cart-empty">
+        <span class="icon">🛒</span>
+        <div>Sacola vazia</div>
+        <div class="sub">Adicione itens do cardápio</div>
+        <button class="btn primary" style="margin-top:16px;padding:12px 24px" onclick="voltarParaTotem()">Ver cardápio</button>
+      </div>
+    `;
   } else {
-    container.innerHTML = c.map((it, i) => `
+    container.innerHTML = cart.map((it, i) => `
       <div class="cart-item">
-        <img src="${it.img}" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2250%22 height=%2250%22%3E%3Crect width=%2250%22 height=%2250%22 fill=%22%230a1420%22/%3E%3Ctext x=%2225%22 y=%2232%22 text-anchor=%22middle%22 fill=%22%239aa6b2%22 font-size=%2214%22%3E🍕%3C/text%3E%3C/svg%3E'">
-        <div style="flex:1">${it.title}</div>
-        <div style="display:flex;align-items:center;gap:6px">
-          <button class="btn secondary" style="padding:4px 8px" onclick="alterarQtd(${i},-1)">-</button>
-          <span>${it.qty}x</span>
-          <button class="btn primary" style="padding:4px 8px" onclick="alterarQtd(${i},1)">+</button>
+        <img src="${it.img || 'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2250%22 height=%2250%22%3E%3Crect width=%2250%22 height=%2250%22 fill=%22%230a1420%22/%3E%3Ctext x=%2225%22 y=%2232%22 text-anchor=%22middle%22 fill=%22%239aa6b2%22 font-size=%2214%22%3E🍕%3C/text%3E%3C/svg%3E'}" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2250%22 height=%2250%22%3E%3Crect width=%2250%22 height=%2250%22 fill=%22%230a1420%22/%3E%3Ctext x=%2225%22 y=%2232%22 text-anchor=%22middle%22 fill=%22%239aa6b2%22 font-size=%2214%22%3E🍕%3C/text%3E%3C/svg%3E'">
+        <div class="item-info">
+          <div class="title">${it.title}</div>
+          <div class="price">${money(it.price)}</div>
         </div>
+        <div class="quantity-control">
+          <button class="minus" onclick="alterarQtd(${i},-1)">−</button>
+          <span>${it.qty}</span>
+          <button class="plus" onclick="alterarQtd(${i},1)">+</button>
+        </div>
+        <button class="btn-remove" onclick="removerItem(${i})" title="Remover">✕</button>
       </div>
     `).join('');
   }
@@ -311,82 +322,81 @@ function renderCart() {
   renderTotais();
   
   const btn = document.getElementById('btnConfirmar');
-  if (btn) btn.disabled = c.length === 0;
+  if (btn) btn.disabled = cart.length === 0;
 }
 
 function renderTotais() {
-  const c = getCart();
-  const sub = c.reduce((s, i) => s + (i.price || 0) * (i.qty || 1), 0);
+  const sub = cart.reduce((s, i) => s + (i.price || 0) * (i.qty || 1), 0);
   const container = document.getElementById('totais');
   
   container.innerHTML = `
-    Subtotal: ${money(sub)}<br>
-    Entrega: ${taxaAtual !== null ? money(taxaAtual) : '—'}${distanciaAtual ? ` <span style="opacity:.6">(${distanciaAtual.toFixed(1)} km)</span>` : ''}
-    <br><b>Total: ${money(sub + (taxaAtual || 0))}</b>
+    <div style="display:flex;justify-content:space-between;padding:4px 0">
+      <span>Subtotal:</span>
+      <span>${money(sub)}</span>
+    </div>
+    <div style="display:flex;justify-content:space-between;padding:4px 0">
+      <span>Entrega:</span>
+      <span>${taxaAtual !== null ? money(taxaAtual) : '—'}${distanciaAtual ? ` <span style="opacity:.6;font-size:12px">(${distanciaAtual.toFixed(1)} km)</span>` : ''}</span>
+    </div>
+    <div style="display:flex;justify-content:space-between;padding:8px 0 0;border-top:1px solid #333;font-size:18px;font-weight:700;color:#07fcdb">
+      <span>Total:</span>
+      <span>${money(sub + (taxaAtual || 0))}</span>
+    </div>
   `;
 }
 
 function renderCupom() {
-  const c = getCart();
   const containerItens = document.getElementById('cupomItens');
   const containerTotal = document.getElementById('cupomTotal');
-  const sub = c.reduce((s, i) => s + (i.price || 0) * (i.qty || 1), 0);
+  const sub = cart.reduce((s, i) => s + (i.price || 0) * (i.qty || 1), 0);
   
-  containerItens.innerHTML = c.map(i => `${i.qty}x ${i.title}`).join('<br>') || 'Nenhum item';
+  containerItens.innerHTML = cart.map(i => `${i.qty}x ${i.title}`).join('<br>') || 'Nenhum item';
   containerTotal.innerHTML = `
-    Subtotal: ${money(sub)}<br>
-    Entrega: <b style="color:#07fcdb">${taxaAtual !== null ? money(taxaAtual) : '—'}</b>
-    <br><b>Total: ${money(sub + (taxaAtual || 0))}</b>
+    <div style="display:flex;justify-content:space-between;padding:2px 0">
+      <span>Subtotal:</span> <span>${money(sub)}</span>
+    </div>
+    <div style="display:flex;justify-content:space-between;padding:2px 0">
+      <span>Entrega:</span> <span style="color:#07fcdb">${taxaAtual !== null ? money(taxaAtual) : '—'}</span>
+    </div>
+    <div style="display:flex;justify-content:space-between;padding:4px 0;border-top:1px solid #333;font-size:16px;font-weight:700;color:#07fcdb">
+      <span>Total:</span> <span>${money(sub + (taxaAtual || 0))}</span>
+    </div>
   `;
 }
 
 // ============================================================
-// FUNÇÕES GLOBAIS (acessíveis via onclick)
+// FUNÇÕES DO CARRINHO
 // ============================================================
-window.addMolho = function(nome) {
-  const c = getCart();
-  const existente = c.find(x => x.id === nome);
-  
-  if (existente) {
-    existente.qty++;
-  } else {
-    c.push({
-      id: nome,
-      title: nome,
-      price: SAUCES[nome].price,
-      qty: 1,
-      img: SAUCES[nome].img
-    });
-  }
-  
-  setCart(c);
-  renderCart();
-};
-
 window.alterarQtd = function(i, delta) {
-  const c = getCart();
-  c[i].qty += delta;
+  cart = getCart();
+  cart[i].qty += delta;
   
-  if (c[i].qty <= 0) {
-    c.splice(i, 1);
+  if (cart[i].qty <= 0) {
+    cart.splice(i, 1);
   }
   
-  setCart(c);
+  setCart(cart);
   renderCart();
   renderCupom();
 };
 
-window.limparSacola = function() {
-  if (confirm('Tem certeza que deseja esvaziar a sacola?')) {
-    localStorage.removeItem(CART_KEY);
+window.removerItem = function(i) {
+  if (confirm('Remover este item do carrinho?')) {
+    cart = getCart();
+    cart.splice(i, 1);
+    setCart(cart);
     renderCart();
+    renderCupom();
   }
 };
 
+// ============================================================
+// MODAL
+// ============================================================
 window.abrirModal = function() {
-  const c = getCart();
+  cart = getCart();
   
-  if (!c.length) {
+  if (!cart.length) {
     alert('Adicione pelo menos 1 item na sacola');
     return;
   }
@@ -400,6 +410,9 @@ window.fecharModal = function() {
   document.getElementById('modalEndereco').style.display = 'none';
 };
 
+// ============================================================
+// LOCALIZAÇÃO
+// ============================================================
 window.usarLocalizacao = function() {
   const btn = document.getElementById('btnGeo');
   const status = document.getElementById('geoStatus');
@@ -471,13 +484,12 @@ window.usarLocalizacao = function() {
 // ENVIAR PEDIDO
 // ============================================================
 window.enviarPedido = async function() {
-  const c = getCart();
+  cart = getCart();
   const erroEl = document.getElementById('erroEnvio');
   erroEl.classList.remove('visible');
   erroEl.textContent = '';
 
-  // Validações
-  if (!c.length) {
+  if (!cart.length) {
     alert('Sacola vazia');
     return;
   }
@@ -536,18 +548,16 @@ window.enviarPedido = async function() {
 
   if (taxaAtual === null) taxaAtual = 5;
 
-  // Desabilitar botão e mostrar loading
   const btn = document.querySelector('#modalEndereco .btn.primary');
   btn.disabled = true;
   btn.textContent = '⏳ Enviando...';
   document.getElementById('loadingOverlay').classList.add('active');
 
   try {
-    // GERA CÓDIGO ALEATÓRIO NUMÉRICO
     const codigoPedido = gerarCodigoPedido();
     
-    const subtotal = c.reduce((s, i) => s + (Number(i.price) || 0) * (Number(i.qty) || 1), 0);
-    const itensFormatados = c.map(i => ({
+    const subtotal = cart.reduce((s, i) => s + (Number(i.price) || 0) * (Number(i.qty) || 1), 0);
+    const itensFormatados = cart.map(i => ({
       id: i.id,
       nome: i.title,
       title: i.title,
@@ -589,21 +599,17 @@ window.enviarPedido = async function() {
       criadoEmMs: Date.now()
     };
 
-    // Salvar no Firestore
     await db.collection('pedidos').doc(codigoPedido).set(pedido);
 
-    // Salvar localmente (histórico)
     localStorage.setItem('pasterry_cliente_v1', JSON.stringify(pedido.cliente));
     const hist = JSON.parse(localStorage.getItem('pedidos_pasterry_v1') || '[]');
     hist.push({ ...pedido, criadoEm: new Date().toISOString() });
     localStorage.setItem('pedidos_pasterry_v1', JSON.stringify(hist));
 
-    // Limpar carrinho
     localStorage.removeItem(CART_KEY);
 
-    // Mostrar código e redirecionar
     alert(`✅ Pedido #${codigoPedido} confirmado com sucesso!`);
-    location.href = 'status.html?id=' + codigoPedido;
+    window.location.href = 'status.html?id=' + codigoPedido;
 
   } catch (err) {
     console.error('❌ Erro ao enviar pedido:', err);
@@ -622,10 +628,8 @@ document.addEventListener('DOMContentLoaded', async function() {
   console.log('🚀 Inicializando carrinho...');
   
   await carregarConfiguracoes();
-  renderMolhos();
   renderCart();
 
-  // Eventos para calcular taxa
   const rua = document.getElementById('rua');
   const numero = document.getElementById('numero');
   const cidade = document.getElementById('cidade');
@@ -634,7 +638,6 @@ document.addEventListener('DOMContentLoaded', async function() {
   numero.addEventListener('input', calcDebounced);
   cidade.addEventListener('change', calcDebounced);
 
-  // Mostrar campo troco quando pagamento for Dinheiro
   const pagamento = document.getElementById('pagamento');
   const troco = document.getElementById('troco');
   
@@ -642,7 +645,6 @@ document.addEventListener('DOMContentLoaded', async function() {
     troco.style.display = this.value === 'Dinheiro' ? 'block' : 'none';
   });
 
-  // Máscara de telefone
   const telEl = document.getElementById('telefone');
   if (!telEl.value) telEl.value = '(11) ';
   
