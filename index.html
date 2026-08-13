@@ -880,6 +880,48 @@
     }
     /* ================================== */
 
+    /* ===== BOTÃO DE TAMANHO - COR LARANJA ===== */
+    .btn-tamanho {
+      background: #2d5016 !important;
+      border: 1px solid #2d5016 !important;
+      color: #fff !important;
+      transition: all 0.3s ease !important;
+    }
+    .btn-tamanho:hover {
+      background: #3a6b1d !important;
+      transform: scale(1.02);
+    }
+    .btn-tamanho.selecionado {
+      background: #FF6B00 !important;
+      border-color: #FF6B00 !important;
+      color: #fff !important;
+      box-shadow: 0 0 30px rgba(255, 107, 0, 0.4) !important;
+    }
+    /* ================================== */
+
+    /* ===== BOTÃO DOS ITENS (ADD) ===== */
+    .add-btn {
+      background: #2d5016 !important;
+      border: 0 !important;
+      color: #fff !important;
+      font-weight: 800 !important;
+      transition: all 0.3s ease !important;
+    }
+    .add-btn:hover {
+      background: #4CAF50 !important;
+      transform: scale(1.02);
+    }
+    .add-btn:active {
+      transform: scale(0.97) !important;
+    }
+    /* ================================== */
+
+    /* ===== CONTAINER MAIS COMPRIDO ===== */
+    .products-wrap {
+      max-height: calc(100vh - 200px) !important;
+    }
+    /* ==================================== */
+
     /* ===== RESPONSIVIDADE ===== */
     @media (max-width: 768px) {
       header { padding: 10px 16px; gap: 10px; }
@@ -1585,17 +1627,14 @@
     function saveCart() { localStorage.setItem(CART_KEY, JSON.stringify(cart)); updateCheckoutText(); }
     let cart = loadCart();
 
-    // ⭐ FUNÇÃO CORRIGIDA: CALCULA TOTAL COM precoTotal
     function getCartTotal() { 
         return cart.reduce((s, i) => s + ((i.precoTotal || i.price) * i.qty), 0); 
     }
 
-    // ⭐ FUNÇÃO CORRIGIDA: CONTA ITENS
     function getCartCount() { 
         return cart.reduce((s, i) => s + i.qty, 0); 
     }
 
-    // ⭐ FUNÇÃO CORRIGIDA: ATUALIZA O RODAPÉ
     function updateCheckoutText() {
         const n = getCartCount();
         const total = getCartTotal();
@@ -1954,11 +1993,9 @@
       const variantId = `${p.id}-${sizeKey}`;
       let displayTitle = getDisplayName(p.title);
       
-      // Calcular preço total (produto + extras)
       const totalExtras = extras.reduce((sum, e) => sum + (e.preco || 2.50), 0);
       const precoTotal = price + totalExtras;
       
-      // Construir título com os extras
       let titleWithSize = `${displayTitle} ${sizeKey}${unit}`;
       let extrasText = '';
       
@@ -1968,16 +2005,13 @@
         extrasText = nomesExtras;
       }
       
-      // Verificar se o item já existe no carrinho
       const existingIndex = cart.findIndex(i => {
         return i.baseId === p.id && i.sizeKey === sizeKey && !i.isExtra;
       });
       
       if (existingIndex > -1) {
-        // Se já existe, atualizar a quantidade
         const existing = cart[existingIndex];
         existing.qty += 1;
-        // Manter os extras
         if (existing.extras && extras.length > 0) {
           extras.forEach(e => {
             if (!existing.extras.find(ex => ex.id === e.id)) {
@@ -1987,17 +2021,14 @@
         } else if (extras.length > 0) {
           existing.extras = extras;
         }
-        // Atualizar preço total
         const newTotalExtras = existing.extras ? existing.extras.reduce((sum, e) => sum + (e.preco || 2.50), 0) : 0;
         existing.precoTotal = price + newTotalExtras;
         existing.price = price;
-        // Atualizar título
         if (existing.extras && existing.extras.length > 0) {
           const allExtras = existing.extras.map(e => e.nome).join(', ');
           existing.title = `${displayTitle} ${sizeKey}${unit} (+ ${allExtras})`;
         }
       } else {
-        // Criar novo item
         cart.push({ 
           id: variantId,
           baseId: p.id,
@@ -2093,7 +2124,6 @@
       sizeImg.src = (p.img && p.img.startsWith('http')) ? p.img : "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='600' height='400'><rect width='100%' height='100%' fill='%230a1420'/><text x='50%' y='50%' fill='%23a7b6c1' font-size='20' text-anchor='middle' dominant-baseline='middle'>Sem imagem</text></svg>";
       sizeImg.alt = p.title;
       
-      // Logo da marca
       if (logoMarcaAtual) {
         logoMarcaDetalhe.src = logoMarcaAtual;
         logoMarcaDetalhe.style.display = 'block';
@@ -2107,28 +2137,25 @@
       entries.forEach(([size, price]) => {
         const btn = document.createElement('button');
         btn.type = 'button';
-        btn.className = 'btn';
+        btn.className = 'btn btn-tamanho';
         btn.style.display = 'flex';
         btn.style.justifyContent = 'space-between';
         btn.style.alignItems = 'center';
         btn.innerHTML = `<span>${size} ${unit}</span><strong>${formatBRL(price)}</strong>`;
-        
-        btn.addEventListener('click', () => {
-          // Desmarcar todos
-          sizeOptions.querySelectorAll('.btn').forEach(b => {
-            b.style.background = '#29864b';
-            b.style.border = 'none';
+        btn.addEventListener('click', ()=>{
+          // Desmarcar todos (voltar ao estilo padrão - verde musgo)
+          sizeOptions.querySelectorAll('.btn-tamanho').forEach(b => {
+            b.style.background = '#2d5016';
+            b.style.border = '1px solid #2d5016';
+            b.classList.remove('selecionado');
           });
-          btn.style.background = '#4CAF50';
-          btn.style.border = '2px solid #fff';
+          // Marcar o selecionado com LARANJA
+          btn.style.background = '#FF6B00';
+          btn.style.border = '1px solid #FF6B00';
+          btn.classList.add('selecionado');
           selectedSize = size;
           updateAddButton();
         });
-        
-        if (!lojaAberta) {
-          btn.disabled = true;
-          btn.classList.add('loja-fechada-size');
-        }
         bindPressAnimation(btn);
         sizeOptions.appendChild(btn);
       });
@@ -2187,13 +2214,17 @@
       });
     }
 
+    // ============================================================
+    // ⭐ FUNÇÃO CORRIGIDA: updateAddButton - SEM O TAMANHO NO TEXTO
+    // ============================================================
     function updateAddButton() {
       if (selectedSize) {
         const extraText = selectedExtras.length > 0 ? ` + ${selectedExtras.length} extra(s)` : '';
         const price = pendingProduct.sizes[selectedSize];
         let totalPrice = price;
         selectedExtras.forEach(e => totalPrice += (e.preco || 2.50));
-        addWithExtrasBtn.textContent = `Adicionar ${selectedSize} ${formatBRL(totalPrice)}${extraText}`;
+        // ⭐ ALTERADO: Remove o tamanho do texto, mostra apenas "Adicionar" + valor
+        addWithExtrasBtn.textContent = `Adicionar ${formatBRL(totalPrice)}${extraText}`;
         addWithExtrasBtn.style.opacity = '1';
         addWithExtrasBtn.disabled = false;
       } else {
