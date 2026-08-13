@@ -1179,6 +1179,7 @@ window.addExtra = function(nome, preco, img) {
       id: id,
       title: nome,
       price: preco,
+      precoTotal: preco,
       qty: 1,
       img: img || '',
       tipo: 'extra',
@@ -1191,7 +1192,7 @@ window.addExtra = function(nome, preco, img) {
 };
 
 // ============================================================
-// RENDERIZAR CARRINHO (COM EXTRAS E PRECO TOTAL)
+// ⭐ RENDERIZAR CARRINHO (COM PRECO TOTAL)
 // ============================================================
 function renderCart() {
   var c = getCart();
@@ -1212,9 +1213,12 @@ function renderCart() {
     var html = '';
     for (var j = 0; j < c.length; j++) {
       var it = c[j];
+      
+      // ⭐ USAR precoTotal se existir, senão price
       var precoItem = it.precoTotal || it.price || 0;
       var sub = precoItem * (it.qty || 1);
       var isExtra = it.tipo === 'extra' || it.isExtra === true;
+      
       var imgSrc = it.img || 'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2250%22 height=%2250%22%3E%3Crect width=%2250%22 height=%2250%22 fill=%22%230a1420%22/%3E%3Ctext x=%2225%22 y=%2232%22 text-anchor=%22middle%22 fill=%22%239aa6b2%22 font-size=%2214%22%3E' + (isExtra ? '🧂' : '🍕') + '%3C/text%3E%3C/svg%3E';
       
       // Mostrar extras se houver
@@ -1503,7 +1507,7 @@ function usarLocalizacao() {
 }
 
 // ============================================================
-// ENVIAR PEDIDO (COM PRECO TOTAL)
+// ⭐ ENVIAR PEDIDO (COM PRECO TOTAL)
 // ============================================================
 function enviarPedido() {
   var c = getCart();
