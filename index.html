@@ -1027,6 +1027,17 @@
       font-size: 12px;
       padding: 6px 0;
     }
+
+    /* ⭐ BOTÃO CARRINHO DESABILITADO */
+    .footer-cart:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none !important;
+      background: #555 !important;
+    }
+    .footer-cart:disabled:hover {
+      transform: none !important;
+    }
   </style>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
@@ -2270,6 +2281,11 @@
     }
 
     checkoutBtn.addEventListener('click', () => {
+      // ⭐ SE LOJA FECHADA, NÃO VAI PARA O CARRINHO
+      if (!lojaAberta) {
+        showCenterNotification('Loja fechada', 'Não é possível acessar o carrinho no momento');
+        return;
+      }
       saveCart();
       window.location.href = 'carrinho.html';
     });
@@ -2306,9 +2322,10 @@
     document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && successOverlay.style.display === 'flex') hideSuccess(); });
 
     // ============================================================
-    // ATUALIZAR BOTÕES
+    // ⭐ ATUALIZAR BOTÕES - CORRIGIDO (INCLUI BOTÃO CARRINHO)
     // ============================================================
     function atualizarBotoes() {
+      // Botões de adicionar
       document.querySelectorAll('.add-btn').forEach(btn => {
         btn.disabled = !lojaAberta;
         if (lojaAberta) {
@@ -2321,6 +2338,22 @@
           btn.style.background = '#666';
         }
       });
+
+      // ⭐ BOTÃO DO CARRINHO - DESABILITADO QUANDO LOJA FECHADA
+      const checkoutBtn = document.getElementById('checkoutBtn');
+      if (checkoutBtn) {
+        if (lojaAberta) {
+          checkoutBtn.disabled = false;
+          checkoutBtn.style.opacity = '1';
+          checkoutBtn.style.cursor = 'pointer';
+          checkoutBtn.style.background = cores.corCart || '#AC940D';
+        } else {
+          checkoutBtn.disabled = true;
+          checkoutBtn.style.opacity = '0.5';
+          checkoutBtn.style.cursor = 'not-allowed';
+          checkoutBtn.style.background = '#555';
+        }
+      }
     }
 
     // ============================================================
