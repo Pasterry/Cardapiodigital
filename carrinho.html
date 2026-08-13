@@ -46,6 +46,21 @@ body {
   font-weight: 700;
 }
 
+/* ===== MENSAGEM LOJA FECHADA ===== */
+.loja-fechada-msg {
+  display: none;
+  background: rgba(244, 67, 54, 0.15);
+  border: 2px solid #f44336;
+  border-radius: 12px;
+  color: #f44336;
+  font-weight: 800;
+  padding: 12px 16px;
+  margin: 8px 0 12px 0;
+  text-align: center;
+  font-size: clamp(14px, 2vw, 18px);
+}
+.loja-fechada-msg strong { color: #fff; }
+
 /* ===== TÍTULOS ===== */
 h3 {
   margin: 16px 0 10px;
@@ -127,6 +142,18 @@ h3 .count {
   opacity: 0.5;
   cursor: not-allowed;
 }
+.btn.extra-add {
+  background: #2d5016 !important;
+  color: #fff !important;
+}
+.btn.extra-add:hover {
+  background: #4CAF50 !important;
+}
+.btn.extra-add:disabled {
+  background: #555 !important;
+  opacity: 0.5;
+  cursor: not-allowed;
+}
 
 /* ===== ITENS EXTRAS ===== */
 .extras {
@@ -180,6 +207,13 @@ h3 .count {
   padding: 4px;
   font-size: 13px;
   border-radius: 6px;
+}
+.extra-card.loja-fechada {
+  opacity: 0.5;
+}
+.extra-card.loja-fechada .btn {
+  background: #555 !important;
+  cursor: not-allowed;
 }
 
 /* ===== CUPOM DE DESCONTO ===== */
@@ -385,6 +419,10 @@ h3 .count {
   font-size: 16px;
   flex: 1;
   border-radius: 12px;
+}
+.btn-large:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 /* ===== MODAL ===== */
@@ -616,6 +654,10 @@ h3 .count {
 .btn-limpar:hover {
   background: rgba(220,53,69,0.1);
 }
+.btn-limpar:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
 
 /* ===== RESPONSIVO ===== */
 @media (max-width: 480px) {
@@ -720,6 +762,11 @@ h3 .count {
   <span class="badge" id="cartBadge">0 itens</span>
 </div>
 
+<!-- ===== MENSAGEM LOJA FECHADA ===== -->
+<div id="lojaFechadaMsg" class="loja-fechada-msg">
+  <span>🔴 <strong>Loja fechada</strong> – Não é possível adicionar itens no momento.</span>
+</div>
+
 <!-- ===== ITENS EXTRAS (MOLHOS / ADICIONAIS) ===== -->
 <h3>🧂 Itens Extras <span class="count">(adicione ao seu pedido)</span></h3>
 <div class="extras" id="extrasContainer">
@@ -741,7 +788,7 @@ h3 .count {
 <div id="cart"></div>
 
 <!-- ===== AÇÕES ===== -->
-<button class="btn-limpar" onclick="limparSacola()">🗑️ Esvaziar sacola</button>
+<button class="btn-limpar" id="btnLimparSacola" onclick="limparSacola()">🗑️ Esvaziar sacola</button>
 
 <!-- ===== RODAPÉ ===== -->
 <div class="footer-actions">
@@ -854,6 +901,7 @@ var configEntrega = null;
 var extras = [];
 var cuponsValidos = [];
 var cupomAplicado = null;
+var lojaAberta = true;
 
 var getCart = function() {
   try {
@@ -910,7 +958,6 @@ function showToast(msg, type) {
 
 // ============================================================
 // CALCULAR TOTAL DO CARRINHO
-// Usa precoTotal se existir (itens com adicionais), senão usa price
 // ============================================================
 function getCartTotal() {
   var c = getCart();
@@ -920,6 +967,93 @@ function getCartTotal() {
     total += precoItem * (c[i].qty || 1);
   }
   return total;
+}
+
+// ============================================================
+// ⭐ CARREGAR STATUS DA LOJA
+// ============================================================
+function carregarStatusLoja() {
+  db.collection('config').doc('loja').onSnapshot(function(doc) {
+    if (doc.exists) {
+      var data = doc.data();
+      lojaAberta = data.lojaAberta !== undefined ? data.lojaAberta : true;
+    } else {
+      lojaAberta = true;
+    }
+    console.log('🏪 Status da loja:', lojaAberta ? 'ABERTA' : 'FECHADA');
+    atualizarInterfaceLoja();
+  }, function(error) {
+    console.error('Erro ao carregar status da loja:', error);
+    lojaAberta = true;
+    atualizarInterfaceLoja();
+  });
+}
+
+// ============================================================
+// ⭐ ATUALIZAR INTERFACE QUANDO LOJA FECHADA
+// ============================================================
+function atualizarInterfaceLoja() {
+  var msgDiv = document.getElementById('lojaFechadaMsg');
+  var btnConfirmar = document.getElementById('btnConfirmar');
+  var btnLimpar = document.getElementById('btnLimparSacola');
+  
+  if (!lojaAberta) {
+    // Mostra mensagem
+    msgDiv.style.display = 'block';
+    
+    // Desabilita botão confirmar
+    if (btnConfirmar) {
+      btnConfirmar.disabled = true;
+      btnConfirmar.textContent = '🔴 Loja Fechada';
+      btnConfirmar.style.background = '#555';
+    }
+    
+    // Desabilita botão limpar
+    if (btnLimpar) {
+      btnLimpar.disabled = true;
+    }
+    
+    // Desabilita botões de adicionar extras
+    document.querySelectorAll('.extra-card .btn').forEach(function(btn) {
+      btn.disabled = true;
+      btn.textContent = '🔴 Fechado';
+      btn.style.background = '#555';
+    });
+    
+    // Adiciona classe nas cards
+    document.querySelectorAll('.extra-card').forEach(function(card) {
+      card.classList.add('loja-fechada');
+    });
+    
+  } else {
+    // Mostra mensagem
+    msgDiv.style.display = 'none';
+    
+    // Habilita botão confirmar
+    if (btnConfirmar) {
+      var c = getCart();
+      btnConfirmar.disabled = c.length === 0;
+      btnConfirmar.textContent = '✅ Confirmar';
+      btnConfirmar.style.background = '';
+    }
+    
+    // Habilita botão limpar
+    if (btnLimpar) {
+      btnLimpar.disabled = false;
+    }
+    
+    // Habilita botões de adicionar extras
+    document.querySelectorAll('.extra-card .btn').forEach(function(btn) {
+      btn.disabled = false;
+      btn.textContent = '+ Adicionar';
+      btn.style.background = '';
+    });
+    
+    // Remove classe das cards
+    document.querySelectorAll('.extra-card').forEach(function(card) {
+      card.classList.remove('loja-fechada');
+    });
+  }
 }
 
 // ============================================================
@@ -1011,6 +1145,11 @@ function carregarCupons() {
 // APLICAR CUPOM
 // ============================================================
 function aplicarCupom() {
+  if (!lojaAberta) {
+    showToast('Loja fechada. Não é possível aplicar cupons.', 'error');
+    return;
+  }
+  
   var codigo = document.getElementById('cupomInput').value.trim().toUpperCase();
   if (!codigo) {
     showToast('Digite um código de cupom.', 'error');
@@ -1067,7 +1206,7 @@ function removerCupom() {
 }
 
 // ============================================================
-// ⭐ CARREGAR ITENS EXTRAS (COM FILTRO DE ATIVOS)
+// CARREGAR ITENS EXTRAS (COM FILTRO DE ATIVOS)
 // ============================================================
 function carregarExtras() {
   console.log('🔍 Iniciando carregamento de extras...');
@@ -1092,10 +1231,9 @@ function carregarExtras() {
         }
         
         if (dadosExtras && dadosExtras.length > 0) {
-          // ⭐ FILTRA APENAS OS ITENS ATIVOS (NÃO PAUSADOS)
+          // FILTRA APENAS OS ITENS ATIVOS (NÃO PAUSADOS)
           extras = dadosExtras
             .filter(function(item) {
-              // Só inclui se ativo não for false
               return item.ativo !== false;
             })
             .map(function(item) {
@@ -1116,11 +1254,13 @@ function carregarExtras() {
       }
       
       renderExtras();
+      atualizarInterfaceLoja();
     })
     .catch(function(err) {
       console.error('❌ Erro ao carregar extras:', err);
       extras = EXTRAS_PADRAO.slice();
       renderExtras();
+      atualizarInterfaceLoja();
     });
 }
 
@@ -1154,11 +1294,16 @@ function renderExtras() {
     
     var imgSrc = img || 'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22120%22 height=%2248%22%3E%3Crect width=%22120%22 height=%2248%22 fill=%22%230a1420%22/%3E%3Ctext x=%2260%22 y=%2230%22 text-anchor=%22middle%22 fill=%22%239aa6b2%22 font-size=%2214%22%3E🧂%3C/text%3E%3C/svg%3E';
     
-    html += '<div class="extra-card">';
+    // ⭐ Se loja fechada, adiciona classe e desabilita botão
+    var btnDisabled = !lojaAberta ? 'disabled' : '';
+    var btnText = lojaAberta ? '+ Adicionar' : '🔴 Fechado';
+    var cardClass = lojaAberta ? '' : 'loja-fechada';
+    
+    html += '<div class="extra-card ' + cardClass + '">';
     html += '<img src="' + imgSrc + '" onerror="this.src=\'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22120%22 height=%2248%22%3E%3Crect width=%22120%22 height=%2248%22 fill=%22%230a1420%22/%3E%3Ctext x=%2260%22 y=%2230%22 text-anchor=%22middle%22 fill=%22%239aa6b2%22 font-size=%2214%22%3E🧂%3C/text%3E%3C/svg%3E\'" />';
     html += '<div class="nome">' + nome + '</div>';
     html += '<div class="preco">' + money(preco) + '</div>';
-    html += '<button class="btn primary small" onclick="addExtra(\'' + nomeEscapado + '\', ' + preco + ', \'' + (img || '') + '\')">+ Adicionar</button>';
+    html += '<button class="btn primary small extra-add" ' + btnDisabled + ' onclick="addExtra(\'' + nomeEscapado + '\', ' + preco + ', \'' + (img || '') + '\')">' + btnText + '</button>';
     html += '</div>';
   }
   
@@ -1166,9 +1311,14 @@ function renderExtras() {
 }
 
 // ============================================================
-// FUNÇÕES DO CARRINHO - ITENS EXTRAS
+// ⭐ FUNÇÕES DO CARRINHO - ITENS EXTRAS (COM VERIFICAÇÃO)
 // ============================================================
 window.addExtra = function(nome, preco, img) {
+  if (!lojaAberta) {
+    showToast('🔴 Loja fechada. Não é possível adicionar itens.', 'error');
+    return;
+  }
+  
   var c = getCart();
   var id = 'extra_' + nome.replace(/\s/g, '_');
   var existente = null;
@@ -1220,14 +1370,12 @@ function renderCart() {
     for (var j = 0; j < c.length; j++) {
       var it = c[j];
       
-      // USAR precoTotal se existir, senão price
       var precoItem = it.precoTotal || it.price || 0;
       var sub = precoItem * (it.qty || 1);
       var isExtra = it.tipo === 'extra' || it.isExtra === true;
       
       var imgSrc = it.img || 'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2250%22 height=%2250%22%3E%3Crect width=%2250%22 height=%2250%22 fill=%22%230a1420%22/%3E%3Ctext x=%2225%22 y=%2232%22 text-anchor=%22middle%22 fill=%22%239aa6b2%22 font-size=%2214%22%3E' + (isExtra ? '🧂' : '🍕') + '%3C/text%3E%3C/svg%3E';
       
-      // Mostrar extras se houver
       var extrasHtml = '';
       if (it.extras && it.extras.length > 0) {
         var nomesExtras = it.extras.map(function(e) { return e.nome; }).join(', ');
@@ -1253,7 +1401,17 @@ function renderCart() {
   }
   renderTotais();
   var btn = document.getElementById('btnConfirmar');
-  if (btn) btn.disabled = c.length === 0;
+  if (btn) {
+    if (!lojaAberta) {
+      btn.disabled = true;
+      btn.textContent = '🔴 Loja Fechada';
+      btn.style.background = '#555';
+    } else {
+      btn.disabled = c.length === 0;
+      btn.textContent = '✅ Confirmar';
+      btn.style.background = '';
+    }
+  }
 }
 
 function alterarQtd(i, delta) {
@@ -1265,6 +1423,10 @@ function alterarQtd(i, delta) {
 }
 
 function limparSacola() {
+  if (!lojaAberta) {
+    showToast('Loja fechada. Não é possível esvaziar a sacola.', 'error');
+    return;
+  }
   if (getCart().length === 0) {
     showToast('Sacola já está vazia', 'warning');
     return;
@@ -1421,6 +1583,11 @@ var calcDebounced = debounce(calcularTaxaEndereco, 800);
 // MODAL ENDEREÇO
 // ============================================================
 function abrirModal() {
+  if (!lojaAberta) {
+    showToast('🔴 Loja fechada. Não é possível finalizar o pedido.', 'error');
+    return;
+  }
+  
   var c = getCart();
   if (!c.length) {
     alert('Adicione pelo menos 1 item na sacola');
@@ -1516,6 +1683,11 @@ function usarLocalizacao() {
 // ENVIAR PEDIDO (COM PRECO TOTAL)
 // ============================================================
 function enviarPedido() {
+  if (!lojaAberta) {
+    showToast('🔴 Loja fechada. Não é possível enviar pedidos.', 'error');
+    return;
+  }
+  
   var c = getCart();
   var erroEl = document.getElementById('erroEnvio');
   erroEl.classList.remove('visible');
@@ -1657,6 +1829,9 @@ function mascaraTelefone(input) {
 // ============================================================
 document.addEventListener('DOMContentLoaded', function() {
   console.log('🚀 Inicializando carrinho...');
+  
+  // ⭐ Carregar status da loja primeiro
+  carregarStatusLoja();
   
   carregarConfig();
   carregarCupons();
