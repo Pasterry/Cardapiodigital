@@ -909,7 +909,7 @@ function showToast(msg, type) {
 }
 
 // ============================================================
-// ⭐ FUNÇÃO CORRIGIDA: CALCULAR TOTAL DO CARRINHO
+// CALCULAR TOTAL DO CARRINHO
 // Usa precoTotal se existir (itens com adicionais), senão usa price
 // ============================================================
 function getCartTotal() {
@@ -1067,7 +1067,7 @@ function removerCupom() {
 }
 
 // ============================================================
-// CARREGAR ITENS EXTRAS
+// ⭐ CARREGAR ITENS EXTRAS (COM FILTRO DE ATIVOS)
 // ============================================================
 function carregarExtras() {
   console.log('🔍 Iniciando carregamento de extras...');
@@ -1092,14 +1092,20 @@ function carregarExtras() {
         }
         
         if (dadosExtras && dadosExtras.length > 0) {
-          extras = dadosExtras.map(function(item) {
-            return {
-              nome: item.name || item.nome || 'Item',
-              preco: item.preco || item.price || 0,
-              img: item.img || ''
-            };
-          });
-          console.log('✅ Extras processados:', extras);
+          // ⭐ FILTRA APENAS OS ITENS ATIVOS (NÃO PAUSADOS)
+          extras = dadosExtras
+            .filter(function(item) {
+              // Só inclui se ativo não for false
+              return item.ativo !== false;
+            })
+            .map(function(item) {
+              return {
+                nome: item.name || item.nome || 'Item',
+                preco: item.preco || item.price || 0,
+                img: item.img || ''
+              };
+            });
+          console.log('✅ Extras processados (apenas ativos):', extras);
         } else {
           console.warn('⚠️ Nenhum item extra. Usando fallback.');
           extras = EXTRAS_PADRAO.slice();
@@ -1192,7 +1198,7 @@ window.addExtra = function(nome, preco, img) {
 };
 
 // ============================================================
-// ⭐ RENDERIZAR CARRINHO (COM PRECO TOTAL)
+// RENDERIZAR CARRINHO (COM PRECO TOTAL)
 // ============================================================
 function renderCart() {
   var c = getCart();
@@ -1214,7 +1220,7 @@ function renderCart() {
     for (var j = 0; j < c.length; j++) {
       var it = c[j];
       
-      // ⭐ USAR precoTotal se existir, senão price
+      // USAR precoTotal se existir, senão price
       var precoItem = it.precoTotal || it.price || 0;
       var sub = precoItem * (it.qty || 1);
       var isExtra = it.tipo === 'extra' || it.isExtra === true;
@@ -1277,7 +1283,7 @@ function limparSacola() {
 }
 
 // ============================================================
-// TOTAIS COM DESCONTO (USANDO getCartTotal)
+// TOTAIS COM DESCONTO
 // ============================================================
 function renderTotais() {
   var sub = getCartTotal();
@@ -1507,7 +1513,7 @@ function usarLocalizacao() {
 }
 
 // ============================================================
-// ⭐ ENVIAR PEDIDO (COM PRECO TOTAL)
+// ENVIAR PEDIDO (COM PRECO TOTAL)
 // ============================================================
 function enviarPedido() {
   var c = getCart();
@@ -1692,7 +1698,6 @@ window.fecharModal = fecharModal;
 window.usarLocalizacao = usarLocalizacao;
 window.enviarPedido = enviarPedido;
 window.renderCart = renderCart;
-window.testarCupons = testarCupons;
 </script>
 </body>
 </html>
