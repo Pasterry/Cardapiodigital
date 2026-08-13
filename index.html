@@ -1578,28 +1578,39 @@
     }
 
     // ============================================================
-    // CARRINHO
+    // ⭐ CARRINHO CORRIGIDO - USA precoTotal
     // ============================================================
     const CART_KEY = 'pasterry_cart_v1';
     function loadCart() { try { return JSON.parse(localStorage.getItem(CART_KEY) || '[]'); } catch { return []; } }
     function saveCart() { localStorage.setItem(CART_KEY, JSON.stringify(cart)); updateCheckoutText(); }
     let cart = loadCart();
-    function getCartCount() { return cart.reduce((s, i) => s + i.qty, 0); }
-    function getCartTotal() { return cart.reduce((s, i) => s + (i.price * i.qty), 0); }
-    function updateCheckoutText() {
-      const n = getCartCount();
-      const total = getCartTotal();
-      const cartBadge = document.getElementById('cartBadge');
-      const cartTotalEl = document.getElementById('cartTotal');
-      const checkoutBtn = document.getElementById('checkoutBtn');
-      if (cartBadge) cartBadge.textContent = n;
-      if (cartTotalEl) cartTotalEl.textContent = formatBRL(total);
-      if (checkoutBtn) checkoutBtn.setAttribute('aria-label', `Ver carrinho (${n} itens, ${formatBRL(total)})`);
+
+    // ⭐ FUNÇÃO CORRIGIDA: CALCULA TOTAL COM precoTotal
+    function getCartTotal() { 
+        return cart.reduce((s, i) => s + ((i.precoTotal || i.price) * i.qty), 0); 
     }
+
+    // ⭐ FUNÇÃO CORRIGIDA: CONTA ITENS
+    function getCartCount() { 
+        return cart.reduce((s, i) => s + i.qty, 0); 
+    }
+
+    // ⭐ FUNÇÃO CORRIGIDA: ATUALIZA O RODAPÉ
+    function updateCheckoutText() {
+        const n = getCartCount();
+        const total = getCartTotal();
+        const cartBadge = document.getElementById('cartBadge');
+        const cartTotalEl = document.getElementById('cartTotal');
+        const checkoutBtn = document.getElementById('checkoutBtn');
+        if (cartBadge) cartBadge.textContent = n;
+        if (cartTotalEl) cartTotalEl.textContent = formatBRL(total);
+        if (checkoutBtn) checkoutBtn.setAttribute('aria-label', `Ver carrinho (${n} itens, ${formatBRL(total)})`);
+    }
+
     function pulseCart() {
-      const btn = document.getElementById('checkoutBtn');
-      const badge = document.getElementById('cartBadge');
-      [btn, badge].forEach(el => { if (!el) return; el.classList.remove('pulse'); void el.offsetWidth; el.classList.add('pulse'); });
+        const btn = document.getElementById('checkoutBtn');
+        const badge = document.getElementById('cartBadge');
+        [btn, badge].forEach(el => { if (!el) return; el.classList.remove('pulse'); void el.offsetWidth; el.classList.add('pulse'); });
     }
     const checkoutBtn = document.getElementById('checkoutBtn');
     const cartBadge = document.getElementById('cartBadge');
