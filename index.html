@@ -1930,6 +1930,9 @@
       showCenterNotification(`${displayTitle} adicionado!`, `Quantidade: ${existing ? existing.qty : 1}`);
     }
 
+    // ============================================================
+    // ⭐ FUNÇÃO CORRIGIDA: addToCartWithSize - SALVA precoTotal
+    // ============================================================
     function addToCartWithSize(p, sizeKey, extras = []) {
       if (!lojaAberta) {
         showCenterNotification('Loja fechada', 'Não é possível adicionar itens no momento');
@@ -1940,9 +1943,13 @@
       const variantId = `${p.id}-${sizeKey}`;
       let displayTitle = getDisplayName(p.title);
       
+      // Calcular preço total (produto + extras)
+      const totalExtras = extras.reduce((sum, e) => sum + (e.preco || 2.50), 0);
+      const precoTotal = price + totalExtras;
+      
+      // Construir título com os extras
       let titleWithSize = `${displayTitle} ${sizeKey}${unit}`;
       let extrasText = '';
-      const precoTotal = price + extras.reduce((sum, e) => sum + (e.preco || 2.50), 0);
       
       if (extras.length > 0) {
         const nomesExtras = extras.map(e => e.nome).join(', ');
@@ -1950,23 +1957,40 @@
         extrasText = nomesExtras;
       }
       
-      const existing = cart.find(i => i.id === variantId);
-      if (existing) {
+      // Verificar se o item já existe no carrinho
+      const existingIndex = cart.findIndex(i => {
+        return i.baseId === p.id && i.sizeKey === sizeKey && !i.isExtra;
+      });
+      
+      if (existingIndex > -1) {
+        // Se já existe, atualizar a quantidade
+        const existing = cart[existingIndex];
         existing.qty += 1;
-        if (existing.extras) {
+        // Manter os extras
+        if (existing.extras && extras.length > 0) {
           extras.forEach(e => {
             if (!existing.extras.find(ex => ex.id === e.id)) {
               existing.extras.push(e);
             }
           });
-        } else {
+        } else if (extras.length > 0) {
           existing.extras = extras;
         }
-        existing.precoTotal = precoTotal;
-        existing.title = titleWithSize;
+        // Atualizar preço total
+        const newTotalExtras = existing.extras ? existing.extras.reduce((sum, e) => sum + (e.preco || 2.50), 0) : 0;
+        existing.precoTotal = price + newTotalExtras;
+        existing.price = price;
+        // Atualizar título
+        if (existing.extras && existing.extras.length > 0) {
+          const allExtras = existing.extras.map(e => e.nome).join(', ');
+          existing.title = `${displayTitle} ${sizeKey}${unit} (+ ${allExtras})`;
+        }
       } else {
+        // Criar novo item
         cart.push({ 
-          id: variantId, 
+          id: variantId,
+          baseId: p.id,
+          sizeKey: sizeKey,
           title: titleWithSize, 
           price: price,
           precoTotal: precoTotal,
@@ -1974,16 +1998,18 @@
           img: p.img,
           extras: extras.map(e => ({ id: e.id, nome: e.nome, preco: e.preco || 2.50 })),
           extrasText: extrasText,
-          baseId: p.id,
-          sizeKey: sizeKey
+          isExtra: false,
+          totalExtras: totalExtras
         });
       }
+      
       saveCart();
       pulseCart();
+      
       const msg = extras.length > 0 
         ? `${titleWithSize} + ${extras.length} extra(s)!` 
         : `${titleWithSize} adicionado!`;
-      showCenterNotification(msg, `Quantidade: ${existing ? existing.qty + 1 : 1}`);
+      showCenterNotification(msg, `Quantidade: ${(cart[existingIndex] ? cart[existingIndex].qty : 1)}`);
     }
 
     // ============================================================
