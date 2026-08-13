@@ -1037,6 +1037,32 @@
       .menu-dropdown .item { padding: 10px 14px; font-size: 13px; }
       .menu-dropdown .item .icon { font-size: 18px; width: 24px; }
     }
+
+    /* ===== ⭐ BOTÃO FECHAR DETALHES ===== */
+    .detalhes-fechar {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: rgba(0,0,0,0.6);
+      border: none;
+      color: #fff;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      font-size: 20px;
+      cursor: pointer;
+      z-index: 10;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s, transform 0.2s;
+    }
+    .detalhes-fechar:hover {
+      background: rgba(255,255,255,0.2);
+    }
+    .detalhes-fechar:active {
+      transform: scale(0.9);
+    }
   </style>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
@@ -1134,9 +1160,12 @@
       </div>
     </div>
 
-    <!-- MODAL DE TAMANHOS -->
+    <!-- ===== MODAL DE TAMANHOS COM BOTÃO FECHAR ===== -->
     <div class="overlay" id="sizeOverlay" aria-hidden="true" style="display:none">
-      <div class="dialog" role="dialog" aria-modal="true" aria-labelledby="sizeTitle" style="max-width:420px;">
+      <div class="dialog" role="dialog" aria-modal="true" aria-labelledby="sizeTitle" style="max-width:420px; position:relative;">
+        <!-- ⭐ BOTÃO FECHAR -->
+        <button class="detalhes-fechar" id="fecharDetalhesBtn" aria-label="Fechar detalhes">✕</button>
+        
         <div id="sizeTitle" style="font-weight:800;font-size:18px;color:var(--cor-fonte-titulo);text-align:center;"></div>
         <div id="sizeDesc" class="muted" style="text-align:center;font-size:13px;"></div>
         
@@ -2085,6 +2114,14 @@
       addWithExtrasBtn.textContent = 'Selecione um tamanho';
       addWithExtrasBtn.style.opacity = '0.5';
       addWithExtrasBtn.disabled = true;
+
+      // ⭐ BOTÃO FECHAR DETALHES
+      const fecharBtn = document.getElementById('fecharDetalhesBtn');
+      if (fecharBtn) {
+        fecharBtn.onclick = function() {
+          closeSizeDialog();
+        };
+      }
 
       sizeOverlay.style.display = 'flex';
       sizeOverlay.setAttribute('aria-hidden', 'false');
