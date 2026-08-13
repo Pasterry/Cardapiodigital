@@ -465,7 +465,7 @@
     }
     .dialog {
       width: 90%;
-      max-width: 400px;
+      max-width: 420px;
       background: #272323;
       border-radius: 12px;
       padding: 16px;
@@ -535,7 +535,12 @@
       display: none;
     }
 
-    #sizeOverlay .dialog { max-width: 360px; }
+    #sizeOverlay .dialog { max-width: 420px; }
+    #sizeOptions {
+      display: grid;
+      gap: 8px;
+      margin-top: 8px;
+    }
     #sizeOptions button {
       display: flex !important;
       justify-content: space-between !important;
@@ -817,6 +822,64 @@
       #successTitle { font-size: 20px; }
     }
 
+    /* ===== ADICIONAIS NO MODAL ===== */
+    .adicionais-section {
+      margin-top: 14px;
+      padding-top: 14px;
+      border-top: 1px solid rgba(255,255,255,0.08);
+    }
+    .adicionais-section .label {
+      font-weight: 900;
+      font-size: 16px;
+      color: #FF6B00;
+      margin-bottom: 8px;
+      display: block;
+      text-shadow: 0 0 20px rgba(255,107,0,0.2);
+      letter-spacing: 0.5px;
+    }
+    .adicionais-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 6px;
+      max-height: 200px;
+      overflow-y: auto;
+      padding: 4px 0;
+    }
+    .adicionais-grid .btn-extra {
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 20px;
+      padding: 8px 14px;
+      color: #fff;
+      font-size: 12px;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-weight: 600;
+      text-align: left;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      width: 100%;
+    }
+    .adicionais-grid .btn-extra:hover {
+      background: rgba(255,255,255,0.12);
+    }
+    .adicionais-grid .btn-extra.selecionado {
+      background: #FF6B00;
+      border-color: #FF6B00;
+      color: #fff;
+      box-shadow: 0 0 30px rgba(255,107,0,0.4);
+    }
+    .adicionais-grid .btn-extra .preco-extra {
+      color: #FF6B00;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+    .adicionais-grid .btn-extra.selecionado .preco-extra {
+      color: #fff;
+    }
+    /* ================================== */
+
     /* ===== RESPONSIVIDADE ===== */
     @media (max-width: 768px) {
       header { padding: 10px 16px; gap: 10px; }
@@ -884,6 +947,43 @@
       font-size: 14px;
       background: rgba(244, 67, 54, 0.1);
       border-radius: 6px;
+    }
+
+    /* ===== IMAGEM NO MODAL ===== */
+    .modal-image-wrap {
+      width: 100%;
+      border-radius: 12px;
+      overflow: hidden;
+      background: #0c1220;
+      position: relative;
+    }
+    .modal-image-wrap img {
+      width: 100%;
+      height: auto;
+      max-height: 220px;
+      object-fit: cover;
+      display: block;
+    }
+    .modal-image-wrap .logo-marca-detalhe {
+      position: absolute;
+      bottom: 12px;
+      left: 12px;
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.5);
+      background: rgba(0,0,0,0.3);
+      padding: 2px;
+      object-fit: contain;
+      z-index: 2;
+      pointer-events: none;
+      display: none;
+    }
+    .modal-image-wrap .muted {
+      text-align: center;
+      font-size: 12px;
+      padding: 6px 0;
     }
   </style>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
@@ -983,15 +1083,37 @@
       </div>
     </div>
 
+    <!-- ===== MODAL DE TAMANHOS REORGANIZADO ===== -->
     <div class="overlay" id="sizeOverlay" aria-hidden="true" style="display:none">
-      <div class="dialog" role="dialog" aria-modal="true" aria-labelledby="sizeTitle">
-        <div class="left-panel">
-          <div id="sizeTitle" style="font-weight:800;font-size:18px;color:var(--cor-fonte-titulo)"></div>
-          <div id="sizeDesc" class="muted" style="margin-top:2px"></div>
-          <div id="sizeOptions" style="display:grid;gap:8px;margin-top:8px"></div>
+      <div class="dialog" role="dialog" aria-modal="true" aria-labelledby="sizeTitle" style="max-width:420px;">
+        <!-- TÍTULO E DESCRIÇÃO -->
+        <div id="sizeTitle" style="font-weight:800;font-size:18px;color:var(--cor-fonte-titulo);text-align:center;"></div>
+        <div id="sizeDesc" class="muted" style="text-align:center;font-size:13px;"></div>
+        
+        <!-- 1️⃣ IMAGEM -->
+        <div class="modal-image-wrap" id="modalImageWrap">
+          <img id="sizeImg" src="" alt="Produto" />
+          <img id="logoMarcaDetalhe" class="logo-marca-detalhe" src="img/logo.jpg" alt="Logo Pasterry" />
+          <div class="muted" style="text-align:center;font-size:11px;padding:4px 0;">Toque no tamanho e nos extras desejados</div>
         </div>
-        <div class="size-image-wrap" id="sizeImageWrap"></div>
+        
+        <!-- 2️⃣ TAMANHOS -->
+        <div id="sizeOptions" style="display:grid;gap:8px;margin-top:6px;"></div>
+        
+        <!-- 3️⃣ ADICIONAIS -->
+        <div class="adicionais-section" id="adicionaisSection" style="display:none;">
+          <span class="label">➕ Adicionar Extras</span>
+          <div class="adicionais-grid" id="adicionaisGrid"></div>
+        </div>
+        
+        <!-- MENSAGEM DE LOJA FECHADA -->
         <div id="sizeFechadaMsg" class="size-fechada-msg" style="display:none;">🔒 Loja fechada – não é possível adicionar</div>
+        
+        <!-- BOTÕES -->
+        <div style="margin-top:10px;display:flex;gap:8px;">
+          <button class="btn" id="addWithExtras" type="button" style="background:var(--cor-botao-adicionar);color:#fff;flex:1;">Selecione um tamanho</button>
+          <button class="btn secondary" id="cancelSize" type="button" style="flex:0 0 auto;padding:12px 20px;">Cancelar</button>
+        </div>
       </div>
     </div>
   </div>
@@ -1027,7 +1149,6 @@
     // ============================================================
     // VARIÁVEIS GLOBAIS
     // ============================================================
-    // Carregar nomes das coleções do localStorage (igual ao painel)
     const NOME_COLECAO_PRODUTOS = localStorage.getItem('colecaoProdutos') || 'produtos';
     const NOME_COLECAO_CATEGORIAS = localStorage.getItem('colecaoCategorias') || 'categorias';
     
@@ -1039,9 +1160,59 @@
     let logoMarcaAtual = '';
     let fechamentoExtra = '';
 
+    // ===== ADICIONAIS =====
+    let adicionaisCache = [];
+
     const DIAS_SEMANA = ['domingo','segunda','terca','quarta','quinta','sexta','sabado'];
     let horariosCache = {};
     let cores = {};
+
+    // ============================================================
+    // CARREGAR ADICIONAIS DO FIRESTORE
+    // ============================================================
+    async function carregarAdicionais() {
+        try {
+            const doc = await db.collection('pasterry').doc('menu').get();
+            
+            if (doc.exists) {
+                const data = doc.data();
+                if (data.adicionais && Array.isArray(data.adicionais)) {
+                    adicionaisCache = data.adicionais;
+                    console.log(`✅ ${adicionaisCache.length} adicionais carregados do pasterry/menu!`);
+                    return adicionaisCache;
+                }
+            }
+            
+            const snapshot = await db.collection('adicionais').get();
+            adicionaisCache = [];
+            snapshot.forEach((doc) => {
+                adicionaisCache.push({
+                    id: doc.id,
+                    ...doc.data()
+                });
+            });
+            console.log(`✅ ${adicionaisCache.length} adicionais carregados (fallback)!`);
+            return adicionaisCache;
+            
+        } catch (error) {
+            console.error('❌ Erro ao carregar adicionais:', error);
+            return [];
+        }
+    }
+
+    function getAdicionalPorId(id) {
+        return adicionaisCache.find(a => a.id === id);
+    }
+
+    function getAdicionaisPorCategoria(categoriaId) {
+        if (!categoriaId) return [];
+        return adicionaisCache.filter(ad => {
+            if (!ad.categorias || ad.categorias.length === 0) {
+                return ad.ativo !== false;
+            }
+            return ad.ativo !== false && ad.categorias.includes(categoriaId);
+        });
+    }
 
     // ============================================================
     // CARREGAR E APLICAR CORES
@@ -1115,7 +1286,7 @@
     }
 
     // ============================================================
-    // HORÁRIOS E STATUS (COM LISTENER)
+    // HORÁRIOS E STATUS
     // ============================================================
     function carregarStatusHorarios() {
       db.collection('config').doc('horarios').onSnapshot((doc) => {
@@ -1298,9 +1469,6 @@
       });
     }
 
-    // ============================================================
-    // MENU DROPDOWN - Toggle
-    // ============================================================
     const menuToggle = document.getElementById('menuToggle');
     const menuDropdown = document.getElementById('menuDropdown');
     menuToggle.addEventListener('click', (e) => {
@@ -1384,6 +1552,10 @@
     // NOTIFICAÇÕES
     // ============================================================
     function showCenterNotification(title, sub = 'Adicionado ao carrinho') {
+      const centerToast = document.getElementById('centerToast');
+      const centerToastMsg = document.getElementById('centerToastMsg');
+      const centerToastSub = document.getElementById('centerToastSub');
+      const checkoutBtn = document.getElementById('checkoutBtn');
       centerToast.classList.remove('voando');
       centerToastMsg.textContent = title;
       centerToastSub.textContent = sub;
@@ -1417,9 +1589,11 @@
     function updateCheckoutText() {
       const n = getCartCount();
       const total = getCartTotal();
+      const cartBadge = document.getElementById('cartBadge');
+      const cartTotalEl = document.getElementById('cartTotal');
+      const checkoutBtn = document.getElementById('checkoutBtn');
       if (cartBadge) cartBadge.textContent = n;
-      const totalEl = document.getElementById('cartTotal');
-      if (totalEl) totalEl.textContent = formatBRL(total);
+      if (cartTotalEl) cartTotalEl.textContent = formatBRL(total);
       if (checkoutBtn) checkoutBtn.setAttribute('aria-label', `Ver carrinho (${n} itens, ${formatBRL(total)})`);
     }
     function pulseCart() {
@@ -1429,9 +1603,6 @@
     }
     const checkoutBtn = document.getElementById('checkoutBtn');
     const cartBadge = document.getElementById('cartBadge');
-    const centerToast = document.getElementById('centerToast');
-    const centerToastMsg = document.getElementById('centerToastMsg');
-    const centerToastSub = document.getElementById('centerToastSub');
 
     // ============================================================
     // CATEGORIAS E PRODUTOS
@@ -1540,7 +1711,7 @@
     }
 
     // ============================================================
-    // RENDER PRODUTOS - CORRIGIDO (FILTRA APENAS ATIVOS)
+    // RENDER PRODUTOS
     // ============================================================
     function renderProducts() {
       productsEl.innerHTML = '';
@@ -1556,7 +1727,6 @@
         catHeader.textContent = cat.name;
         section.appendChild(catHeader);
 
-        // ⭐ CRUCIAL: Filtrar apenas produtos ativos (ativo === true ou undefined)
         let list = (PRODUCTS[cat.id] || []).filter(p => p.ativo === true || p.ativo === undefined);
         
         if (termoBusca) {
@@ -1760,7 +1930,7 @@
       showCenterNotification(`${displayTitle} adicionado!`, `Quantidade: ${existing ? existing.qty : 1}`);
     }
 
-    function addToCartWithSize(p, sizeKey) {
+    function addToCartWithSize(p, sizeKey, extras = []) {
       if (!lojaAberta) {
         showCenterNotification('Loja fechada', 'Não é possível adicionar itens no momento');
         return;
@@ -1769,13 +1939,51 @@
       const unit = getUnidade(p);
       const variantId = `${p.id}-${sizeKey}`;
       let displayTitle = getDisplayName(p.title);
-      const titleWithSize = `${displayTitle} ${sizeKey}${unit}`;
+      
+      let titleWithSize = `${displayTitle} ${sizeKey}${unit}`;
+      let extrasText = '';
+      const precoTotal = price + extras.reduce((sum, e) => sum + (e.preco || 2.50), 0);
+      
+      if (extras.length > 0) {
+        const nomesExtras = extras.map(e => e.nome).join(', ');
+        titleWithSize = `${displayTitle} ${sizeKey}${unit} (+ ${nomesExtras})`;
+        extrasText = nomesExtras;
+      }
+      
       const existing = cart.find(i => i.id === variantId);
-      if (existing) existing.qty += 1;
-      else cart.push({ id: variantId, title: titleWithSize, price, qty: 1, img: p.img });
+      if (existing) {
+        existing.qty += 1;
+        if (existing.extras) {
+          extras.forEach(e => {
+            if (!existing.extras.find(ex => ex.id === e.id)) {
+              existing.extras.push(e);
+            }
+          });
+        } else {
+          existing.extras = extras;
+        }
+        existing.precoTotal = precoTotal;
+        existing.title = titleWithSize;
+      } else {
+        cart.push({ 
+          id: variantId, 
+          title: titleWithSize, 
+          price: price,
+          precoTotal: precoTotal,
+          qty: 1, 
+          img: p.img,
+          extras: extras.map(e => ({ id: e.id, nome: e.nome, preco: e.preco || 2.50 })),
+          extrasText: extrasText,
+          baseId: p.id,
+          sizeKey: sizeKey
+        });
+      }
       saveCart();
       pulseCart();
-      showCenterNotification(`${titleWithSize} adicionado!`, `Quantidade: ${existing ? existing.qty : 1}`);
+      const msg = extras.length > 0 
+        ? `${titleWithSize} + ${extras.length} extra(s)!` 
+        : `${titleWithSize} adicionado!`;
+      showCenterNotification(msg, `Quantidade: ${existing ? existing.qty + 1 : 1}`);
     }
 
     // ============================================================
@@ -1811,15 +2019,30 @@
     document.getElementById('cancelQty').addEventListener('click', closeQtyDialog);
     overlay.addEventListener('click', (e) => { if (e.target === overlay) closeQtyDialog(); });
 
+    // ===== MODAL DE TAMANHOS REORGANIZADO =====
     const sizeOverlay = document.getElementById('sizeOverlay');
     const sizeTitle = document.getElementById('sizeTitle');
     const sizeDesc = document.getElementById('sizeDesc');
     const sizeOptions = document.getElementById('sizeOptions');
-    const sizeImageWrap = document.getElementById('sizeImageWrap');
     const sizeFechadaMsg = document.getElementById('sizeFechadaMsg');
+    const adicionaisSection = document.getElementById('adicionaisSection');
+    const adicionaisGrid = document.getElementById('adicionaisGrid');
+    const addWithExtrasBtn = document.getElementById('addWithExtras');
+    const cancelSizeBtn = document.getElementById('cancelSize');
+    const sizeImg = document.getElementById('sizeImg');
+    const modalImageWrap = document.getElementById('modalImageWrap');
+    const logoMarcaDetalhe = document.getElementById('logoMarcaDetalhe');
+
+    let pendingProduct = null;
+    let selectedSize = null;
+    let selectedExtras = [];
 
     function openSizeDialog(p) {
-      sizeTitle.textContent = p.title;
+      pendingProduct = p;
+      selectedSize = null;
+      selectedExtras = [];
+      
+      sizeTitle.textContent = getDisplayName(p.title);
       sizeDesc.textContent = p.desc || '';
       sizeOptions.innerHTML = '';
 
@@ -1829,52 +2052,19 @@
         sizeFechadaMsg.style.display = 'none';
       }
 
-      sizeImageWrap.innerHTML = '';
-      const imgWrapper = document.createElement('div');
-      imgWrapper.style.position = 'relative';
-      imgWrapper.style.width = '100%';
-      imgWrapper.style.display = 'flex';
-      imgWrapper.style.justifyContent = 'center';
+      // 1️⃣ IMAGEM
+      sizeImg.src = (p.img && p.img.startsWith('http')) ? p.img : "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='600' height='400'><rect width='100%' height='100%' fill='%230a1420'/><text x='50%' y='50%' fill='%23a7b6c1' font-size='20' text-anchor='middle' dominant-baseline='middle'>Sem imagem</text></svg>";
+      sizeImg.alt = p.title;
+      
+      // Logo da marca
+      if (logoMarcaAtual) {
+        logoMarcaDetalhe.src = logoMarcaAtual;
+        logoMarcaDetalhe.style.display = 'block';
+      } else {
+        logoMarcaDetalhe.style.display = 'none';
+      }
 
-      const img = document.createElement('img');
-      img.className = 'size-image';
-      img.src = (p.img && p.img.startsWith('http')) ? p.img : "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='600' height='400'><rect width='100%' height='100%' fill='%230a1420'/><text x='50%' y='50%' fill='%23a7b6c1' font-size='20' text-anchor='middle' dominant-baseline='middle'>Sem imagem</text></svg>";
-      img.alt = p.title;
-      img.style.width = '100%';
-      img.style.maxHeight = '200px';
-      img.style.objectFit = 'cover';
-      img.style.borderRadius = '12px';
-      imgWrapper.appendChild(img);
-
-      const logoDetalhe = document.createElement('img');
-      logoDetalhe.src = logoMarcaAtual || 'img/logo.jpg';
-      logoDetalhe.alt = 'Logo Pasterry';
-      logoDetalhe.className = 'logo-marca-detalhe';
-      logoDetalhe.style.position = 'absolute';
-      logoDetalhe.style.bottom = '12px';
-      logoDetalhe.style.left = '12px';
-      logoDetalhe.style.width = '48px';
-      logoDetalhe.style.height = '48px';
-      logoDetalhe.style.borderRadius = '50%';
-      logoDetalhe.style.border = '2px solid rgba(255,255,255,0.3)';
-      logoDetalhe.style.boxShadow = '0 2px 8px rgba(0,0,0,0.5)';
-      logoDetalhe.style.background = 'rgba(0,0,0,0.3)';
-      logoDetalhe.style.padding = '2px';
-      logoDetalhe.style.objectFit = 'contain';
-      logoDetalhe.style.zIndex = '2';
-      logoDetalhe.style.pointerEvents = 'none';
-      logoDetalhe.style.display = logoMarcaAtual ? 'block' : 'none';
-      imgWrapper.appendChild(logoDetalhe);
-
-      sizeImageWrap.appendChild(imgWrapper);
-
-      const msg = document.createElement('div');
-      msg.className = 'muted';
-      msg.style.textAlign = 'center';
-      msg.style.fontSize = '12px';
-      msg.textContent = 'Toque em uma opção para adicionar ao pedido.';
-      sizeImageWrap.appendChild(msg);
-
+      // 2️⃣ TAMANHOS
       const unit = getUnidade(p);
       const entries = Object.entries(p.sizes || {}).sort((a, b) => Number(a[0]) - Number(b[0]));
       entries.forEach(([size, price]) => {
@@ -1885,27 +2075,113 @@
         btn.style.justifyContent = 'space-between';
         btn.style.alignItems = 'center';
         btn.innerHTML = `<span>${size} ${unit}</span><strong>${formatBRL(price)}</strong>`;
+        
+        btn.addEventListener('click', () => {
+          // Desmarcar todos
+          sizeOptions.querySelectorAll('.btn').forEach(b => {
+            b.style.background = '#29864b';
+            b.style.border = 'none';
+          });
+          btn.style.background = '#4CAF50';
+          btn.style.border = '2px solid #fff';
+          selectedSize = size;
+          updateAddButton();
+        });
+        
         if (!lojaAberta) {
           btn.disabled = true;
           btn.classList.add('loja-fechada-size');
-        } else {
-          btn.addEventListener('click', () => {
-            addToCartWithSize(p, size);
-            closeSizeDialog();
-          });
         }
         bindPressAnimation(btn);
         sizeOptions.appendChild(btn);
       });
 
+      // 3️⃣ ADICIONAIS
+      renderAdicionais(pendingProduct.id, activeCategory);
+      
+      addWithExtrasBtn.textContent = 'Selecione um tamanho';
+      addWithExtrasBtn.style.opacity = '0.5';
+      addWithExtrasBtn.disabled = true;
+
       sizeOverlay.style.display = 'flex';
       sizeOverlay.setAttribute('aria-hidden', 'false');
+    }
+
+    function renderAdicionais(produtoId, categoriaId) {
+      console.log('📦 Renderizando adicionais para categoria:', categoriaId);
+      
+      const adicionaisFiltrados = getAdicionaisPorCategoria(categoriaId);
+      
+      console.log(`📦 ${adicionaisFiltrados.length} adicionais disponíveis para esta categoria`);
+      
+      if (adicionaisFiltrados.length === 0) {
+        adicionaisSection.style.display = 'none';
+        return;
+      }
+      
+      adicionaisSection.style.display = 'block';
+      adicionaisGrid.innerHTML = '';
+      
+      adicionaisFiltrados.forEach(ad => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'btn-extra';
+        btn.dataset.id = ad.id;
+        btn.innerHTML = `<span>${ad.nome}</span><span class="preco-extra">${formatBRL(ad.preco || 2.50)}</span>`;
+        
+        btn.addEventListener('click', function() {
+          const id = this.dataset.id;
+          const extra = getAdicionalPorId(id);
+          if (!extra) return;
+          
+          const index = selectedExtras.findIndex(e => e.id === id);
+          if (index > -1) {
+            selectedExtras.splice(index, 1);
+            this.classList.remove('selecionado');
+          } else {
+            selectedExtras.push({ id: extra.id, nome: extra.nome, preco: extra.preco || 2.50 });
+            this.classList.add('selecionado');
+          }
+          
+          updateAddButton();
+        });
+        
+        adicionaisGrid.appendChild(btn);
+      });
+    }
+
+    function updateAddButton() {
+      if (selectedSize) {
+        const extraText = selectedExtras.length > 0 ? ` + ${selectedExtras.length} extra(s)` : '';
+        const price = pendingProduct.sizes[selectedSize];
+        let totalPrice = price;
+        selectedExtras.forEach(e => totalPrice += (e.preco || 2.50));
+        addWithExtrasBtn.textContent = `Adicionar ${selectedSize} ${formatBRL(totalPrice)}${extraText}`;
+        addWithExtrasBtn.style.opacity = '1';
+        addWithExtrasBtn.disabled = false;
+      } else {
+        addWithExtrasBtn.textContent = 'Selecione um tamanho';
+        addWithExtrasBtn.style.opacity = '0.5';
+        addWithExtrasBtn.disabled = true;
+      }
     }
 
     function closeSizeDialog() {
       sizeOverlay.style.display = 'none';
       sizeOverlay.setAttribute('aria-hidden', 'true');
+      pendingProduct = null;
+      selectedSize = null;
+      selectedExtras = [];
     }
+    
+    addWithExtrasBtn.addEventListener('click', function() {
+      if (!selectedSize || !pendingProduct) return;
+      addToCartWithSize(pendingProduct, selectedSize, selectedExtras);
+      closeSizeDialog();
+    });
+
+    cancelSizeBtn.addEventListener('click', closeSizeDialog);
+    
     sizeOverlay.addEventListener('click', (e) => { if (e.target === sizeOverlay) closeSizeDialog(); });
 
     function atualizarBotoesTamanho() {
@@ -1980,7 +2256,7 @@
     }
 
     // ============================================================
-    // CARREGAR CATEGORIAS E PRODUTOS (USANDO AS MESMAS COLEÇÕES DO PAINEL)
+    // CARREGAR CATEGORIAS E PRODUTOS
     // ============================================================
     function carregarCardapio() {
       const colecaoCategorias = db.collection(NOME_COLECAO_CATEGORIAS);
@@ -2023,8 +2299,7 @@
             const catId = data.categoria || 'geral';
             if (!tempProducts[catId]) tempProducts[catId] = [];
             
-            // ⭐ Garantir que o campo ativo seja tratado corretamente
-            const isAtivo = data.ativo !== false; // undefined também é considerado ativo
+            const isAtivo = data.ativo !== false;
             
             tempProducts[catId].push({
               id: doc.id,
@@ -2035,7 +2310,7 @@
               sizes: data.sizes || null,
               units: data.units || null,
               unidade: data.unidade || '',
-              ativo: isAtivo // ⭐ Armazenar corretamente
+              ativo: isAtivo
             });
           });
           
@@ -2046,7 +2321,8 @@
         });
     }
 
-    function renderizarTudo() {
+    async function renderizarTudo() {
+      await carregarAdicionais();
       renderCategories();
       renderProducts();
       updateCheckoutText();
