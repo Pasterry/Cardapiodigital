@@ -282,6 +282,11 @@ h3 .count {
   font-weight: 600;
   font-size: 14px;
 }
+.cart-item .info .extras-list {
+  font-size: 11px;
+  color: #FF6B00;
+  margin-top: 2px;
+}
 .cart-item .info .price {
   font-size: 12px;
   color: #FFD700;
@@ -312,6 +317,13 @@ h3 .count {
   font-size: 14px;
   min-width: 50px;
   text-align: right;
+}
+.cart-item.extra-item {
+  border-left: 3px solid #FF6B00;
+  opacity: 0.85;
+}
+.cart-item.extra-item .info .title {
+  color: #FF6B00;
 }
 
 /* ===== TOTAIS ===== */
@@ -897,6 +909,20 @@ function showToast(msg, type) {
 }
 
 // ============================================================
+// ⭐ FUNÇÃO CORRIGIDA: CALCULAR TOTAL DO CARRINHO
+// Usa precoTotal se existir (itens com adicionais), senão usa price
+// ============================================================
+function getCartTotal() {
+  var c = getCart();
+  var total = 0;
+  for (var i = 0; i < c.length; i++) {
+    var precoItem = c[i].precoTotal || c[i].price || 0;
+    total += precoItem * (c[i].qty || 1);
+  }
+  return total;
+}
+
+// ============================================================
 // ITENS EXTRAS PADRÃO (FALLBACK)
 // ============================================================
 var EXTRAS_PADRAO = [
@@ -931,7 +957,6 @@ function carregarCupons() {
         console.log('📦 Dados do documento:', data);
         console.log('🔑 Campos:', Object.keys(data));
         
-        // Tenta carregar de "cupons" ou "cupom"
         if (data.cupons && Array.isArray(data.cupons) && data.cupons.length > 0) {
           cuponsValidos = data.cupons;
           console.log('✅ Cupons carregados do Firebase:', cuponsValidos.length, 'itens');
@@ -949,7 +974,6 @@ function carregarCupons() {
       
       console.log('🏷️ Cupons disponíveis:', cuponsValidos);
       
-      // Verificar se há cupom salvo no localStorage
       var saved = localStorage.getItem(CUPOM_KEY);
       if (saved) {
         try {
@@ -977,35 +1001,9 @@ function carregarCupons() {
     })
     .catch(function(err) {
       console.error('❌ Erro ao carregar cupons:', err);
-      // FALLBACK em caso de erro
       cuponsValidos = CUPONS_FALLBACK;
       renderTotais();
       renderCupom();
-    });
-}
-
-// ============================================================
-// FUNÇÃO PARA TESTAR CUPONS (digitar no console: testarCupons())
-// ============================================================
-function testarCupons() {
-  console.log('🔍 TESTANDO CUPONS...');
-  
-  db.collection('config').doc('cupons').get()
-    .then(function(doc) {
-      console.log('📄 Documento existe?', doc.exists);
-      if (doc.exists) {
-        var data = doc.data();
-        console.log('📦 Dados:', data);
-        console.log('🔑 Campos:', Object.keys(data));
-        console.log('🏷️ Cupons:', data.cupons || data.cupom || 'NENHUM');
-        alert('✅ Documento encontrado!\n\n' + JSON.stringify(data, null, 2));
-      } else {
-        alert('❌ Documento config/cupons NÃO EXISTE!\n\nUsando cupons de fallback:\n' + JSON.stringify(CUPONS_FALLBACK, null, 2));
-      }
-    })
-    .catch(function(err) {
-      console.error('❌ Erro:', err);
-      alert('❌ Erro: ' + err.message);
     });
 }
 
@@ -1036,11 +1034,7 @@ function aplicarCupom() {
     return;
   }
 
-  var cart = getCart();
-  var subtotal = 0;
-  for (var i = 0; i < cart.length; i++) {
-    subtotal += (cart[i].price || 0) * (cart[i].qty || 1);
-  }
+  var subtotal = getCartTotal();
   
   if (cupom.minimo && subtotal < cupom.minimo) {
     showToast('Valor mínimo para este cupom: R$ ' + cupom.minimo.toFixed(2), 'error');
@@ -1187,7 +1181,8 @@ window.addExtra = function(nome, preco, img) {
       price: preco,
       qty: 1,
       img: img || '',
-      tipo: 'extra'
+      tipo: 'extra',
+      isExtra: true
     });
   }
   setCart(c);
@@ -1196,7 +1191,7 @@ window.addExtra = function(nome, preco, img) {
 };
 
 // ============================================================
-// RENDERIZAR CARRINHO
+// RENDERIZAR CARRINHO (COM EXTRAS E PRECO TOTAL)
 // ============================================================
 function renderCart() {
   var c = getCart();
@@ -1217,15 +1212,24 @@ function renderCart() {
     var html = '';
     for (var j = 0; j < c.length; j++) {
       var it = c[j];
-      var sub = (it.price || 0) * (it.qty || 1);
-      var isExtra = it.tipo === 'extra';
+      var precoItem = it.precoTotal || it.price || 0;
+      var sub = precoItem * (it.qty || 1);
+      var isExtra = it.tipo === 'extra' || it.isExtra === true;
       var imgSrc = it.img || 'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2250%22 height=%2250%22%3E%3Crect width=%2250%22 height=%2250%22 fill=%22%230a1420%22/%3E%3Ctext x=%2225%22 y=%2232%22 text-anchor=%22middle%22 fill=%22%239aa6b2%22 font-size=%2214%22%3E' + (isExtra ? '🧂' : '🍕') + '%3C/text%3E%3C/svg%3E';
       
-      html += '<div class="cart-item">';
+      // Mostrar extras se houver
+      var extrasHtml = '';
+      if (it.extras && it.extras.length > 0) {
+        var nomesExtras = it.extras.map(function(e) { return e.nome; }).join(', ');
+        extrasHtml = '<div class="extras-list">➕ ' + nomesExtras + '</div>';
+      }
+      
+      html += '<div class="cart-item' + (isExtra ? ' extra-item' : '') + '">';
       html += '<img src="' + imgSrc + '" onerror="this.src=\'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2250%22 height=%2250%22%3E%3Crect width=%2250%22 height=%2250%22 fill=%22%230a1420%22/%3E%3Ctext x=%2225%22 y=%2232%22 text-anchor=%22middle%22 fill=%22%239aa6b2%22 font-size=%2214%22%3E' + (isExtra ? '🧂' : '🍕') + '%3C/text%3E%3C/svg%3E\'" />';
       html += '<div class="info">';
       html += '<div class="title">' + it.title + (isExtra ? ' 🧂' : '') + '</div>';
-      html += '<div class="price">' + money(it.price) + '</div>';
+      html += extrasHtml;
+      html += '<div class="price">' + money(precoItem) + ' cada</div>';
       html += '</div>';
       html += '<div class="qty-control">';
       html += '<button class="btn secondary small" onclick="alterarQtd(' + j + ',-1)">−</button>';
@@ -1269,14 +1273,10 @@ function limparSacola() {
 }
 
 // ============================================================
-// TOTAIS COM DESCONTO
+// TOTAIS COM DESCONTO (USANDO getCartTotal)
 // ============================================================
 function renderTotais() {
-  var c = getCart();
-  var sub = 0;
-  for (var i = 0; i < c.length; i++) {
-    sub += (c[i].price || 0) * (c[i].qty || 1);
-  }
+  var sub = getCartTotal();
   
   var desconto = 0;
   if (cupomAplicado) {
@@ -1298,10 +1298,7 @@ function renderCupom() {
   var c = getCart();
   var containerItens = document.getElementById('cupomItens');
   var containerTotal = document.getElementById('cupomTotal');
-  var sub = 0;
-  for (var i = 0; i < c.length; i++) {
-    sub += (c[i].price || 0) * (c[i].qty || 1);
-  }
+  var sub = getCartTotal();
   
   var desconto = 0;
   if (cupomAplicado) {
@@ -1318,7 +1315,8 @@ function renderCupom() {
 
   var itensHtml = '';
   for (var j = 0; j < c.length; j++) {
-    itensHtml += c[j].qty + 'x ' + c[j].title + (c[j].tipo === 'extra' ? ' 🧂' : '') + '<br>';
+    var precoItem = c[j].precoTotal || c[j].price || 0;
+    itensHtml += c[j].qty + 'x ' + c[j].title + (c[j].tipo === 'extra' ? ' 🧂' : '') + ' - ' + money(precoItem) + '<br>';
   }
   containerItens.innerHTML = itensHtml;
   containerTotal.innerHTML = 
@@ -1505,7 +1503,7 @@ function usarLocalizacao() {
 }
 
 // ============================================================
-// ENVIAR PEDIDO
+// ENVIAR PEDIDO (COM PRECO TOTAL)
 // ============================================================
 function enviarPedido() {
   var c = getCart();
@@ -1550,10 +1548,7 @@ function enviarPedido() {
   document.getElementById('loadingOverlay').classList.add('active');
 
   var codigoPedido = gerarCodigoPedido();
-  var subtotal = 0;
-  for (var i = 0; i < c.length; i++) {
-    subtotal += (Number(c[i].price) || 0) * (Number(c[i].qty) || 1);
-  }
+  var subtotal = getCartTotal();
   
   var desconto = 0;
   if (cupomAplicado) {
@@ -1563,18 +1558,20 @@ function enviarPedido() {
   
   var itensFormatados = [];
   for (var j = 0; j < c.length; j++) {
+    var precoItem = c[j].precoTotal || c[j].price || 0;
     itensFormatados.push({
       id: c[j].id,
       nome: c[j].title,
       title: c[j].title,
-      preco: Number(c[j].price),
-      price: Number(c[j].price),
-      valor: Number(c[j].price),
+      preco: precoItem,
+      price: precoItem,
+      valor: precoItem,
       quantidade: Number(c[j].qty),
       qty: Number(c[j].qty),
-      total: Number(c[j].price) * Number(c[j].qty),
+      total: precoItem * Number(c[j].qty),
       img: c[j].img || '',
-      tipo: c[j].tipo || 'produto'
+      tipo: c[j].tipo || 'produto',
+      extras: c[j].extras || []
     });
   }
 
@@ -1673,7 +1670,6 @@ document.addEventListener('DOMContentLoaded', function() {
   if (!telEl.value) telEl.value = '(11) ';
   telEl.addEventListener('input', function() { mascaraTelefone(telEl); });
   
-  // Eventos do cupom
   document.getElementById('btnAplicarCupom').addEventListener('click', aplicarCupom);
   document.getElementById('btnRemoverCupom').addEventListener('click', removerCupom);
   document.getElementById('cupomInput').addEventListener('keypress', function(e) {
