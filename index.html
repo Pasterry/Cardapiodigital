@@ -596,36 +596,6 @@
       font-weight: 800;
     }
 
-    #sizeOverlay .dialog { max-width: 420px; }
-    #sizeOptions {
-      display: grid;
-      gap: 8px;
-      margin-top: 8px;
-    }
-    #sizeOptions button {
-      display: flex !important;
-      justify-content: space-between !important;
-      align-items: center !important;
-      width: 100% !important;
-      padding: 12px 16px !important;
-      font-size: 15px !important;
-      font-weight: 800 !important;
-      border-radius: 10px !important;
-      background: #29864b !important;
-      color: #fff !important;
-      border: none !important;
-      box-shadow: 0 3px 10px rgba(0, 0, 0, 0.4) !important;
-      min-height: 44px !important;
-      cursor: pointer !important;
-    }
-    #sizeOptions button:hover { filter: brightness(1.1) !important; }
-    #sizeOptions button.loja-fechada-size {
-      background: #555 !important;
-      opacity: 0.6;
-      cursor: not-allowed !important;
-      box-shadow: none !important;
-    }
-
     .share-overlay {
       position: fixed;
       inset: 0;
@@ -882,15 +852,15 @@
 
     /* ===== ADICIONAIS NO MODAL ===== */
     .adicionais-section {
-      margin-top: 14px;
-      padding-top: 14px;
+      margin-top: 8px;
+      padding-top: 8px;
       border-top: 1px solid rgba(255,255,255,0.08);
     }
     .adicionais-section .label {
       font-weight: 900;
-      font-size: 16px;
+      font-size: 13px;
       color: #FF6B00;
-      margin-bottom: 8px;
+      margin-bottom: 4px;
       display: block;
       text-shadow: 0 0 20px rgba(255,107,0,0.2);
       letter-spacing: 0.5px;
@@ -898,18 +868,18 @@
     .adicionais-grid {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
-      gap: 6px;
-      max-height: 200px;
+      gap: 4px;
+      max-height: 120px;
       overflow-y: auto;
-      padding: 4px 0;
+      padding: 2px 0;
     }
     .adicionais-grid .btn-extra {
       background: rgba(255,255,255,0.06);
       border: 1px solid rgba(255,255,255,0.08);
-      border-radius: 20px;
-      padding: 8px 14px;
+      border-radius: 14px;
+      padding: 4px 8px;
       color: #fff;
-      font-size: 12px;
+      font-size: 10px;
       cursor: pointer;
       transition: all 0.2s;
       font-weight: 600;
@@ -931,7 +901,6 @@
     .adicionais-grid .btn-extra .preco-extra {
       color: #FF6B00;
       font-weight: 700;
-      white-space: nowrap;
     }
     .adicionais-grid .btn-extra.selecionado .preco-extra {
       color: #fff;
@@ -978,15 +947,15 @@
       color: #f44336;
       font-weight: 700;
       text-align: center;
-      padding: 4px 0;
-      font-size: 14px;
+      padding: 3px 0;
+      font-size: 12px;
       background: rgba(244, 67, 54, 0.1);
       border-radius: 6px;
     }
 
     .modal-image-wrap {
       width: 100%;
-      border-radius: 12px;
+      border-radius: 10px;
       overflow: hidden;
       background: #0c1220;
       position: relative;
@@ -994,16 +963,16 @@
     .modal-image-wrap img {
       width: 100%;
       height: auto;
-      max-height: 220px;
+      max-height: 150px;
       object-fit: cover;
       display: block;
     }
     .modal-image-wrap .logo-marca-detalhe {
       position: absolute;
-      bottom: 12px;
-      left: 12px;
-      width: 48px;
-      height: 48px;
+      bottom: 8px;
+      left: 8px;
+      width: 36px;
+      height: 36px;
       border-radius: 50%;
       border: 2px solid rgba(255, 255, 255, 0.3);
       box-shadow: 0 2px 8px rgba(0,0,0,0.5);
@@ -1016,8 +985,8 @@
     }
     .modal-image-wrap .muted {
       text-align: center;
-      font-size: 12px;
-      padding: 6px 0;
+      font-size: 10px;
+      padding: 3px 0;
     }
 
     .footer-cart:disabled {
@@ -1038,30 +1007,224 @@
       .menu-dropdown .item .icon { font-size: 18px; width: 24px; }
     }
 
-    /* ===== ⭐ BOTÃO FECHAR DETALHES ===== */
-    .detalhes-fechar {
-      position: absolute;
-      top: 10px;
-      right: 10px;
-      background: rgba(0,0,0,0.6);
+    /* ============================================================
+       ⭐ PÁGINA DE DETALHES - MAIS COMPACTA
+       ============================================================ */
+    .detalhes-content {
+      background: var(--bg-container);
+      border-radius: 16px;
+      max-width: 480px;
+      width: 100%;
+      max-height: 85vh;
+      overflow-y: auto;
+      padding: 12px 14px 16px;
+      border: 1px solid rgba(255,255,255,0.06);
+      box-shadow: 0 30px 80px rgba(0,0,0,0.8);
+      position: relative;
+      animation: slideUp 0.35s ease;
+    }
+    .detalhes-content::-webkit-scrollbar { display: none; }
+    .detalhes-content { scrollbar-width: none; }
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .detalhes-close {
+      position: sticky;
+      top: 0;
+      float: right;
+      background: rgba(255,255,255,0.1);
       border: none;
       color: #fff;
-      width: 36px;
-      height: 36px;
+      width: 30px;
+      height: 30px;
       border-radius: 50%;
-      font-size: 20px;
+      font-size: 16px;
       cursor: pointer;
       z-index: 10;
       display: flex;
       align-items: center;
       justify-content: center;
       transition: background 0.2s, transform 0.2s;
+      margin-bottom: 2px;
     }
-    .detalhes-fechar:hover {
+    .detalhes-close:hover {
       background: rgba(255,255,255,0.2);
     }
-    .detalhes-fechar:active {
+    .detalhes-close:active {
       transform: scale(0.9);
+    }
+
+    .detalhes-img {
+      width: 100%;
+      height: auto;
+      max-height: 140px;
+      object-fit: cover;
+      border-radius: 10px;
+      background: #0c1220;
+      margin-bottom: 6px;
+    }
+
+    .detalhes-titulo {
+      font-size: 17px;
+      font-weight: 800;
+      color: var(--cor-fonte-titulo);
+      margin: 0 0 2px 0;
+    }
+    .detalhes-desc {
+      color: var(--cor-fonte-muted);
+      font-size: 12px;
+      margin: 0 0 4px 0;
+      line-height: 1.4;
+    }
+    .detalhes-preco {
+      font-size: 15px;
+      font-weight: 800;
+      color: var(--cor-fonte-preco);
+      margin-bottom: 6px;
+    }
+
+    .detalhes-label {
+      font-weight: 700;
+      font-size: 11px;
+      color: var(--cor-fonte-muted);
+      margin: 6px 0 3px 0;
+      display: block;
+    }
+
+    .detalhes-tamanhos {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+      margin-bottom: 6px;
+    }
+    .detalhes-tamanho-btn {
+      padding: 5px 10px;
+      border-radius: 8px;
+      border: 2px solid rgba(255,255,255,0.08);
+      background: rgba(255,255,255,0.04);
+      color: #fff;
+      font-weight: 700;
+      font-size: 12px;
+      cursor: pointer;
+      transition: all 0.2s;
+      flex: 1;
+      min-width: 45px;
+      text-align: center;
+    }
+    .detalhes-tamanho-btn:hover {
+      border-color: rgba(255,215,0,0.3);
+      background: rgba(255,215,0,0.05);
+    }
+    .detalhes-tamanho-btn.selecionado {
+      border-color: #FF6B00;
+      background: #FF6B00;
+      color: #fff;
+      box-shadow: 0 0 30px rgba(255,107,0,0.3);
+    }
+    .detalhes-tamanho-btn .preco {
+      display: block;
+      font-size: 10px;
+      color: var(--cor-fonte-preco);
+      margin-top: 1px;
+    }
+    .detalhes-tamanho-btn.selecionado .preco {
+      color: #fff;
+    }
+
+    .detalhes-extras {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 4px;
+      margin-bottom: 6px;
+    }
+    .detalhes-extra-btn {
+      padding: 4px 8px;
+      border-radius: 14px;
+      border: 1px solid rgba(255,255,255,0.08);
+      background: rgba(255,255,255,0.04);
+      color: #fff;
+      font-size: 10px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .detalhes-extra-btn:hover {
+      background: rgba(255,255,255,0.08);
+    }
+    .detalhes-extra-btn.selecionado {
+      background: #FF6B00;
+      border-color: #FF6B00;
+      color: #fff;
+      box-shadow: 0 0 30px rgba(255,107,0,0.3);
+    }
+    .detalhes-extra-btn .preco-extra {
+      color: #FF6B00;
+      font-weight: 700;
+    }
+    .detalhes-extra-btn.selecionado .preco-extra {
+      color: #fff;
+    }
+
+    .detalhes-add-btn {
+      width: 100%;
+      padding: 10px;
+      border-radius: 10px;
+      border: none;
+      background: var(--cor-botao-adicionar);
+      color: #fff;
+      font-weight: 800;
+      font-size: 14px;
+      cursor: pointer;
+      transition: background 0.3s, transform 0.15s;
+      margin-top: 4px;
+    }
+    .detalhes-add-btn:hover {
+      filter: brightness(1.1);
+    }
+    .detalhes-add-btn:active {
+      transform: scale(0.97);
+    }
+    .detalhes-add-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      filter: none;
+    }
+
+    .detalhes-loja-fechada {
+      color: #f44336;
+      font-weight: 700;
+      text-align: center;
+      padding: 4px;
+      background: rgba(244,67,54,0.1);
+      border-radius: 6px;
+      margin: 4px 0;
+      font-size: 12px;
+    }
+
+    @media (max-width: 480px) {
+      .detalhes-content { padding: 10px 12px 14px; max-height: 88vh; border-radius: 12px; }
+      .detalhes-titulo { font-size: 15px; }
+      .detalhes-preco { font-size: 14px; }
+      .detalhes-img { max-height: 110px; }
+      .detalhes-extras { grid-template-columns: 1fr 1fr; }
+      .detalhes-close { width: 26px; height: 26px; font-size: 14px; }
+      .detalhes-add-btn { padding: 8px; font-size: 13px; }
+      .detalhes-tamanho-btn { padding: 4px 8px; font-size: 11px; }
+    }
+    @media (max-width: 360px) {
+      .detalhes-content { padding: 8px 10px 12px; max-height: 90vh; }
+      .detalhes-extras { grid-template-columns: 1fr; }
+      .detalhes-tamanho-btn { padding: 3px 6px; font-size: 10px; min-width: 35px; }
+      .detalhes-img { max-height: 90px; }
+      .detalhes-titulo { font-size: 13px; }
+      .detalhes-preco { font-size: 12px; }
+      .detalhes-add-btn { padding: 6px; font-size: 12px; }
+      .detalhes-close { width: 22px; height: 22px; font-size: 12px; }
     }
   </style>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
@@ -1160,33 +1323,33 @@
       </div>
     </div>
 
-    <!-- ===== MODAL DE TAMANHOS COM BOTÃO FECHAR ===== -->
+    <!-- ===== MODAL DE TAMANHOS MAIS COMPACTO ===== -->
     <div class="overlay" id="sizeOverlay" aria-hidden="true" style="display:none">
-      <div class="dialog" role="dialog" aria-modal="true" aria-labelledby="sizeTitle" style="max-width:420px; position:relative;">
-        <!-- ⭐ BOTÃO FECHAR -->
-        <button class="detalhes-fechar" id="fecharDetalhesBtn" aria-label="Fechar detalhes">✕</button>
+      <div class="dialog" role="dialog" aria-modal="true" aria-labelledby="sizeTitle" style="max-width:420px; position:relative; padding:12px;">
+        <!-- BOTÃO FECHAR -->
+        <button class="detalhes-close" id="fecharDetalhesBtn" aria-label="Fechar detalhes">✕</button>
         
-        <div id="sizeTitle" style="font-weight:800;font-size:18px;color:var(--cor-fonte-titulo);text-align:center;"></div>
-        <div id="sizeDesc" class="muted" style="text-align:center;font-size:13px;"></div>
+        <div id="sizeTitle" style="font-weight:800;font-size:17px;color:var(--cor-fonte-titulo);text-align:center;"></div>
+        <div id="sizeDesc" class="muted" style="text-align:center;font-size:12px;"></div>
         
         <div class="modal-image-wrap" id="modalImageWrap">
           <img id="sizeImg" src="" alt="Produto" />
           <img id="logoMarcaDetalhe" class="logo-marca-detalhe" src="img/logo.jpg" alt="Logo Pasterry" />
-          <div class="muted" style="text-align:center;font-size:11px;padding:4px 0;">Toque no tamanho e nos extras desejados</div>
+          <div class="muted" style="text-align:center;font-size:10px;padding:3px 0;">Toque no tamanho e nos extras desejados</div>
         </div>
         
-        <div id="sizeOptions" style="display:grid;gap:8px;margin-top:6px;"></div>
+        <div id="sizeOptions" style="display:grid;gap:6px;margin-top:4px;"></div>
         
         <div class="adicionais-section" id="adicionaisSection" style="display:none;">
           <span class="label">➕ Adicionar Extras</span>
           <div class="adicionais-grid" id="adicionaisGrid"></div>
         </div>
         
-        <div id="sizeFechadaMsg" class="size-fechada-msg" style="display:none;">🔒 Loja fechada – não é possível adicionar</div>
+        <div id="sizeFechadaMsg" class="size-fechada-msg" style="display:none;">🔒 Loja fechada</div>
         
-        <div style="margin-top:10px;display:flex;gap:8px;">
-          <button class="btn" id="addWithExtras" type="button" style="background:var(--cor-botao-adicionar);color:#fff;flex:1;">Selecione um tamanho</button>
-          <button class="btn secondary" id="cancelSize" type="button" style="flex:0 0 auto;padding:12px 20px;">Cancelar</button>
+        <div style="margin-top:6px;display:flex;gap:6px;">
+          <button class="btn" id="addWithExtras" type="button" style="background:var(--cor-botao-adicionar);color:#fff;flex:1;padding:8px 12px;font-size:14px;border-radius:8px;">Selecione um tamanho</button>
+          <button class="btn secondary" id="cancelSize" type="button" style="flex:0 0 auto;padding:8px 14px;font-size:14px;border-radius:8px;">Cancelar</button>
         </div>
       </div>
     </div>
