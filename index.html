@@ -1785,7 +1785,7 @@
     const cartBadge = document.getElementById('cartBadge');
 
     // ============================================================
-    // CATEGORIAS E PRODUTOS
+    // CATEGORIAS E PRODUTOS - CORRIGIDO
     // ============================================================
     const categoriesEl = document.getElementById('categories');
     const productsEl = document.getElementById('products');
@@ -1864,9 +1864,20 @@
       return lista.slice().sort((a, b) => getDisplayName(a.title).toLowerCase().localeCompare(getDisplayName(b.title).toLowerCase()));
     }
 
+    // ============================================================
+    // RENDER CATEGORIAS - CORRIGIDO (ORDENA POR 'ordem')
+    // ============================================================
     function renderCategories() {
       categoriesEl.innerHTML = '';
-      CATEGORIES.forEach(cat => {
+      
+      // ORDENAR CATEGORIAS PELO CAMPO 'ordem'
+      const categoriasOrdenadas = [...CATEGORIES].sort((a, b) => {
+        const ordemA = a.ordem || 999;
+        const ordemB = b.ordem || 999;
+        return ordemA - ordemB;
+      });
+      
+      categoriasOrdenadas.forEach(cat => {
         const b = document.createElement('button');
         b.type = 'button';
         b.className = 'cat' + (cat.id === activeCategory ? ' active' : '');
@@ -1876,9 +1887,10 @@
         b.addEventListener('click', () => setActiveCategory(cat.id, { scrollIntoView: true }));
         categoriesEl.appendChild(b);
       });
+      
       document.querySelectorAll('.cat').forEach(bindPressAnimation);
       if (CATEGORIES.length > 0 && !activeCategory) {
-        activeCategory = CATEGORIES[0].id;
+        activeCategory = CATEGORIES[0]?.id;
         setActiveCategory(activeCategory);
       }
       aplicarCores(cores);
