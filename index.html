@@ -1403,28 +1403,19 @@
     let cores = {};
 
     // ============================================================
-    // CARREGAR ADICIONAIS
+    // CARREGAR ADICIONAIS - DELIVERY (coleção delivery-adicionais)
     // ============================================================
     async function carregarAdicionais() {
         try {
-            const doc = await db.collection('pasterry').doc('menu').get();
-            if (doc.exists) {
-                const data = doc.data();
-                if (data.adicionais && Array.isArray(data.adicionais)) {
-                    adicionaisCache = data.adicionais;
-                    console.log('✅ Adicionais carregados do pasterry/menu:', adicionaisCache.length);
-                    return adicionaisCache;
-                }
-            }
-            const snapshot = await db.collection('adicionais').get();
+            const snapshot = await db.collection('delivery-adicionais').get();
             adicionaisCache = [];
             snapshot.forEach((doc) => {
                 adicionaisCache.push({ id: doc.id, ...doc.data() });
             });
-            console.log('✅ Adicionais carregados do fallback:', adicionaisCache.length);
+            console.log('✅ Adicionais do delivery carregados:', adicionaisCache.length);
             return adicionaisCache;
         } catch (error) {
-            console.error('❌ Erro ao carregar adicionais:', error);
+            console.error('❌ Erro ao carregar adicionais do delivery:', error);
             return [];
         }
     }
@@ -2114,94 +2105,77 @@
     }
 
     // ============================================================
-    // addToCartWithSize - CORRIGIDO
+    // addToCartWithSize
     // ============================================================
     function addToCartWithSize(p, sizeKey, extras = []) {
-        if (!lojaAberta) {
-            showCenterNotification('Loja fechada', 'Não é possível adicionar itens no momento');
-            return;
-        }
-        
-        console.log('🛒 Adicionando ao carrinho:', p.title, 'Tamanho:', sizeKey, 'Extras:', extras);
-        
-        const price = p.sizes[sizeKey];
-        const unit = getUnidade(p);
-        const variantId = `${p.id}-${sizeKey}`;
-        let displayTitle = getDisplayName(p.title);
-        
-        let totalExtras = 0;
-        let extrasText = '';
-        
-        if (extras && extras.length > 0) {
-            extras.forEach(e => {
-                totalExtras += (e.preco || 2.50);
-            });
-            const nomesExtras = extras.map(e => e.nome).join(', ');
-            extrasText = nomesExtras;
-        }
-        
-        const precoTotal = price + totalExtras;
-        let titleWithSize = `${displayTitle} ${sizeKey}${unit}`;
-        
-        if (extras && extras.length > 0) {
-            const nomesExtras = extras.map(e => e.nome).join(', ');
-            titleWithSize = `${displayTitle} ${sizeKey}${unit} (+ ${nomesExtras})`;
-        }
-        
-        const existingIndex = cart.findIndex(i => {
-            return i.baseId === p.id && i.sizeKey === sizeKey && !i.isExtra;
-        });
-        
-        if (existingIndex > -1) {
-            const existing = cart[existingIndex];
-            existing.qty += 1;
-            
-            if (extras && extras.length > 0) {
-                if (!existing.extras) existing.extras = [];
-                extras.forEach(e => {
-                    if (!existing.extras.find(ex => ex.id === e.id)) {
-                        existing.extras.push(e);
-                    }
-                });
-                const newTotalExtras = existing.extras.reduce((sum, e) => sum + (e.preco || 2.50), 0);
-                existing.precoTotal = price + newTotalExtras;
-                existing.totalExtras = newTotalExtras;
-                
-                const allExtras = existing.extras.map(e => e.nome).join(', ');
-                existing.title = `${displayTitle} ${sizeKey}${unit} (+ ${allExtras})`;
-            } else {
-                existing.precoTotal = price;
-                existing.totalExtras = 0;
+      if (!lojaAberta) {
+        showCenterNotification('Loja fechada', 'Não é possível adicionar itens no momento');
+        return;
+      }
+      const price = p.sizes[sizeKey];
+      const unit = getUnidade(p);
+      const variantId = `${p.id}-${sizeKey}`;
+      let displayTitle = getDisplayName(p.title);
+      
+      const totalExtras = extras.reduce((sum, e) => sum + (e.preco || 2.50), 0);
+      const precoTotal = price + totalExtras;
+      
+      let titleWithSize = `${displayTitle} ${sizeKey}${unit}`;
+      let extrasText = '';
+      
+      if (extras.length > 0) {
+        const nomesExtras = extras.map(e => e.nome).join(', ');
+        titleWithSize = `${displayTitle} ${sizeKey}${unit} (+ ${nomesExtras})`;
+        extrasText = nomesExtras;
+      }
+      
+      const existingIndex = cart.findIndex(i => {
+        return i.baseId === p.id && i.sizeKey === sizeKey && !i.isExtra;
+      });
+      
+      if (existingIndex > -1) {
+        const existing = cart[existingIndex];
+        existing.qty += 1;
+        if (existing.extras && extras.length > 0) {
+          extras.forEach(e => {
+            if (!existing.extras.find(ex => ex.id === e.id)) {
+              existing.extras.push(e);
             }
-            existing.price = price;
-            
-            console.log('📦 Item atualizado no carrinho:', existing.title, 'Qty:', existing.qty);
-        } else {
-            const newItem = {
-                id: variantId,
-                baseId: p.id,
-                sizeKey: sizeKey,
-                title: titleWithSize,
-                price: price,
-                precoTotal: precoTotal,
-                qty: 1,
-                img: p.img,
-                extras: extras ? extras.map(e => ({ id: e.id, nome: e.nome, preco: e.preco || 2.50 })) : [],
-                extrasText: extrasText,
-                isExtra: false,
-                totalExtras: totalExtras
-            };
-            cart.push(newItem);
-            console.log('📦 Novo item adicionado ao carrinho:', newItem.title);
+          });
+        } else if (extras.length > 0) {
+          existing.extras = extras;
         }
-        
-        saveCart();
-        pulseCart();
-        
-        const msg = extras && extras.length > 0 
-            ? `${titleWithSize} + ${extras.length} extra(s)!` 
-            : `${titleWithSize} adicionado!`;
-        showCenterNotification(msg, `Quantidade: ${(cart[existingIndex] ? cart[existingIndex].qty : 1)}`);
+        const newTotalExtras = existing.extras ? existing.extras.reduce((sum, e) => sum + (e.preco || 2.50), 0) : 0;
+        existing.precoTotal = price + newTotalExtras;
+        existing.price = price;
+        if (existing.extras && existing.extras.length > 0) {
+          const allExtras = existing.extras.map(e => e.nome).join(', ');
+          existing.title = `${displayTitle} ${sizeKey}${unit} (+ ${allExtras})`;
+        }
+      } else {
+        cart.push({ 
+          id: variantId,
+          baseId: p.id,
+          sizeKey: sizeKey,
+          title: titleWithSize, 
+          price: price,
+          precoTotal: precoTotal,
+          qty: 1, 
+          img: p.img,
+          extras: extras.map(e => ({ id: e.id, nome: e.nome, preco: e.preco || 2.50 })),
+          extrasText: extrasText,
+          isExtra: false,
+          totalExtras: totalExtras
+        });
+      }
+      
+      saveCart();
+      pulseCart();
+      
+      const msg = extras.length > 0 
+        ? `${titleWithSize} + ${extras.length} extra(s)!` 
+        : `${titleWithSize} adicionado!`;
+      showCenterNotification(msg, `Quantidade: ${(cart[existingIndex] ? cart[existingIndex].qty : 1)}`);
     }
 
     // ============================================================
@@ -2323,53 +2297,43 @@
       sizeOverlay.setAttribute('aria-hidden', 'false');
     }
 
-    // ============================================================
-    // renderAdicionais - CORRIGIDO
-    // ============================================================
     function renderAdicionais(produtoId, categoriaId) {
-        const adicionaisFiltrados = getAdicionaisPorProduto(produtoId, categoriaId);
+      const adicionaisFiltrados = getAdicionaisPorProduto(produtoId, categoriaId);
+      
+      if (adicionaisFiltrados.length === 0) {
+        adicionaisSection.style.display = 'none';
+        return;
+      }
+      
+      adicionaisSection.style.display = 'block';
+      adicionaisGrid.innerHTML = '';
+      
+      adicionaisFiltrados.forEach(ad => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'btn-extra';
+        btn.dataset.id = ad.id;
+        btn.innerHTML = `<span>${ad.nome}</span><span class="preco-extra">${formatBRL(ad.preco || 2.50)}</span>`;
         
-        if (adicionaisFiltrados.length === 0) {
-            adicionaisSection.style.display = 'none';
-            return;
-        }
-        
-        adicionaisSection.style.display = 'block';
-        adicionaisGrid.innerHTML = '';
-        
-        adicionaisFiltrados.forEach(ad => {
-            const btn = document.createElement('button');
-            btn.type = 'button';
-            btn.className = 'btn-extra';
-            btn.dataset.id = ad.id;
-            btn.dataset.nome = ad.nome;
-            btn.dataset.preco = ad.preco || 2.50;
-            btn.innerHTML = `<span>${ad.nome}</span><span class="preco-extra">${formatBRL(ad.preco || 2.50)}</span>`;
-            
-            btn.addEventListener('click', function(e) {
-                e.stopPropagation();
-                const id = this.dataset.id;
-                const nome = this.dataset.nome;
-                const preco = parseFloat(this.dataset.preco);
-                
-                const index = selectedExtras.findIndex(e => e.id === id);
-                if (index > -1) {
-                    selectedExtras.splice(index, 1);
-                    this.classList.remove('selecionado');
-                    console.log('❌ Extra removido:', nome);
-                } else {
-                    selectedExtras.push({ id: id, nome: nome, preco: preco });
-                    this.classList.add('selecionado');
-                    console.log('✅ Extra adicionado:', nome, 'preço:', preco);
-                }
-                
-                updateAddButton();
-            });
-            
-            adicionaisGrid.appendChild(btn);
+        btn.addEventListener('click', function() {
+          const id = this.dataset.id;
+          const extra = getAdicionalPorId(id);
+          if (!extra) return;
+          
+          const index = selectedExtras.findIndex(e => e.id === id);
+          if (index > -1) {
+            selectedExtras.splice(index, 1);
+            this.classList.remove('selecionado');
+          } else {
+            selectedExtras.push({ id: extra.id, nome: extra.nome, preco: extra.preco || 2.50 });
+            this.classList.add('selecionado');
+          }
+          
+          updateAddButton();
         });
         
-        console.log('📋 Extras disponíveis:', adicionaisFiltrados.length);
+        adicionaisGrid.appendChild(btn);
+      });
     }
 
     function updateAddButton() {
