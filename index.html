@@ -1403,14 +1403,22 @@
     let cores = {};
 
     // ============================================================
-    // CARREGAR ADICIONAIS - DELIVERY (coleção delivery-adicionais)
+    // ⭐ CARREGAR ADICIONAIS - DELIVERY (coleção delivery-adicionais)
     // ============================================================
     async function carregarAdicionais() {
         try {
             const snapshot = await db.collection('delivery-adicionais').get();
             adicionaisCache = [];
             snapshot.forEach((doc) => {
-                adicionaisCache.push({ id: doc.id, ...doc.data() });
+                const data = doc.data();
+                adicionaisCache.push({ 
+                    id: doc.id, 
+                    nome: data.nome || data.name || 'Item',
+                    preco: data.preco || data.price || 2.50,
+                    img: data.img || '',
+                    categorias: data.categorias || [],
+                    ativo: data.ativo !== false
+                });
             });
             console.log('✅ Adicionais do delivery carregados:', adicionaisCache.length);
             return adicionaisCache;
@@ -1421,7 +1429,7 @@
     }
 
     // ============================================================
-    // FUNÇÃO PARA BUSCAR ADICIONAIS POR PRODUTO
+    // ⭐ FUNÇÃO PARA BUSCAR ADICIONAIS POR PRODUTO (FILTRADO POR CATEGORIA)
     // ============================================================
     function getAdicionaisPorProduto(produtoId, categoriaId) {
         const produto = PRODUCTS[categoriaId]?.find(p => p.id === produtoId);
@@ -1438,6 +1446,7 @@
         if (!categoriaId) return [];
         return adicionaisCache.filter(ad => {
             if (ad.ativo === false) return false;
+            // Se não tem categorias definidas, aparece para todos
             if (!ad.categorias || ad.categorias.length === 0) {
                 return true;
             }
@@ -1785,7 +1794,7 @@
     const cartBadge = document.getElementById('cartBadge');
 
     // ============================================================
-    // CATEGORIAS E PRODUTOS - CORRIGIDO
+    // CATEGORIAS E PRODUTOS
     // ============================================================
     const categoriesEl = document.getElementById('categories');
     const productsEl = document.getElementById('products');
@@ -1865,19 +1874,12 @@
     }
 
     // ============================================================
-    // RENDER CATEGORIAS - CORRIGIDO (ORDENA POR 'ordem')
+    // RENDER CATEGORIAS
     // ============================================================
     function renderCategories() {
       categoriesEl.innerHTML = '';
-      
-      // ORDENAR CATEGORIAS PELO CAMPO 'ordem'
-      const categoriasOrdenadas = [...CATEGORIES].sort((a, b) => {
-        const ordemA = a.ordem || 999;
-        const ordemB = b.ordem || 999;
-        return ordemA - ordemB;
-      });
-      
-      categoriasOrdenadas.forEach(cat => {
+      CATEGORIES.sort((a,b) => (a.ordem||999) - (b.ordem||999));
+      CATEGORIES.forEach(cat => {
         const b = document.createElement('button');
         b.type = 'button';
         b.className = 'cat' + (cat.id === activeCategory ? ' active' : '');
@@ -1887,7 +1889,6 @@
         b.addEventListener('click', () => setActiveCategory(cat.id, { scrollIntoView: true }));
         categoriesEl.appendChild(b);
       });
-      
       document.querySelectorAll('.cat').forEach(bindPressAnimation);
       if (CATEGORIES.length > 0 && !activeCategory) {
         activeCategory = CATEGORIES[0]?.id;
@@ -2241,6 +2242,48 @@
     let selectedSize = null;
     let selectedExtras = [];
 
+    // ============================================================
+    // ⭐ RENDER ADICIONAIS FILTRADOS POR CATEGORIA (CORRIGIDO)
+    // ============================================================
+    function renderAdicionais(produtoId, categoriaId) {
+      const adicionaisFiltrados = getAdicionaisPorProduto(produtoId, categoriaId);
+      
+      if (adicionaisFiltrados.length === 0) {
+        adicionaisSection.style.display = 'none';
+        return;
+      }
+      
+      adicionaisSection.style.display = 'block';
+      adicionaisGrid.innerHTML = '';
+      
+      adicionaisFiltrados.forEach(ad => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'btn-extra';
+        btn.dataset.id = ad.id;
+        btn.innerHTML = `<span>${ad.nome}</span><span class="preco-extra">${formatBRL(ad.preco || 2.50)}</span>`;
+        
+        btn.addEventListener('click', function() {
+          const id = this.dataset.id;
+          const extra = getAdicionalPorId(id);
+          if (!extra) return;
+          
+          const index = selectedExtras.findIndex(e => e.id === id);
+          if (index > -1) {
+            selectedExtras.splice(index, 1);
+            this.classList.remove('selecionado');
+          } else {
+            selectedExtras.push({ id: extra.id, nome: extra.nome, preco: extra.preco || 2.50 });
+            this.classList.add('selecionado');
+          }
+          
+          updateAddButton();
+        });
+        
+        adicionaisGrid.appendChild(btn);
+      });
+    }
+
     function openSizeDialog(p) {
       pendingProduct = p;
       selectedSize = null;
@@ -2292,6 +2335,7 @@
         sizeOptions.appendChild(btn);
       });
 
+      // ⭐ CHAMA A FUNÇÃO QUE FILTRA OS EXTRAS PELA CATEGORIA
       renderAdicionais(pendingProduct.id, activeCategory);
       
       addWithExtrasBtn.textContent = 'Selecione um tamanho';
@@ -2307,45 +2351,6 @@
 
       sizeOverlay.style.display = 'flex';
       sizeOverlay.setAttribute('aria-hidden', 'false');
-    }
-
-    function renderAdicionais(produtoId, categoriaId) {
-      const adicionaisFiltrados = getAdicionaisPorProduto(produtoId, categoriaId);
-      
-      if (adicionaisFiltrados.length === 0) {
-        adicionaisSection.style.display = 'none';
-        return;
-      }
-      
-      adicionaisSection.style.display = 'block';
-      adicionaisGrid.innerHTML = '';
-      
-      adicionaisFiltrados.forEach(ad => {
-        const btn = document.createElement('button');
-        btn.type = 'button';
-        btn.className = 'btn-extra';
-        btn.dataset.id = ad.id;
-        btn.innerHTML = `<span>${ad.nome}</span><span class="preco-extra">${formatBRL(ad.preco || 2.50)}</span>`;
-        
-        btn.addEventListener('click', function() {
-          const id = this.dataset.id;
-          const extra = getAdicionalPorId(id);
-          if (!extra) return;
-          
-          const index = selectedExtras.findIndex(e => e.id === id);
-          if (index > -1) {
-            selectedExtras.splice(index, 1);
-            this.classList.remove('selecionado');
-          } else {
-            selectedExtras.push({ id: extra.id, nome: extra.nome, preco: extra.preco || 2.50 });
-            this.classList.add('selecionado');
-          }
-          
-          updateAddButton();
-        });
-        
-        adicionaisGrid.appendChild(btn);
-      });
     }
 
     function updateAddButton() {
